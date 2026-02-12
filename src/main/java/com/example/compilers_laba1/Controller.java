@@ -4,11 +4,39 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 
 import java.awt.*;
 import java.net.URI;
 
 public class Controller {
+
+    @FXML
+    private TextArea textArea;
+
+    @FXML
+    protected void undoClick(){
+        textArea.undo();
+    }
+
+    @FXML
+    protected void cutClick(){
+        textArea.cut();
+    }
+
+    @FXML
+    protected void copyClick(){
+        textArea.copy();
+    }
+    @FXML
+    protected  void pasteClick(){
+        textArea.paste();
+    }
+
+    @FXML
+    protected void removeClick(){
+        textArea.clear();
+    }
 
     @FXML
     protected void aboutClick() {
