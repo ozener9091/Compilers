@@ -3,12 +3,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12">
+<VBox xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.compilers_laba1.Controller">
     <BorderPane>
         <top>
             <MenuBar>
                 <Menu text="Файл">
-                    <MenuItem text="Создать" />
+                    <MenuItem text="Создать"/>
                     <MenuItem text="Открыть"/>
                     <MenuItem text="Сохранить"/>
                     <MenuItem text="Сохранить как"/>
@@ -23,10 +25,12 @@
                     <MenuItem text="Выделить все"/>
                 </Menu>
                 <Menu text="Справка">
-                    <MenuItem text="Руководство пользователя"/>
-                    <MenuItem text="О программе"/>
+                    <MenuItem text="Руководство пользователя" onAction="#userManualClick"/>
+                    <MenuItem text="О программе" onAction="#aboutClick"/>
                 </Menu>
             </MenuBar>
         </top>
     </BorderPane>
+    <TextArea></TextArea>
+    <Label>Тут выводится что-то...</Label>
 </VBox>

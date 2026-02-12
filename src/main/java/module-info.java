@@ -1,4 +1,4 @@
-module com.example.compilers_laba1 {
+module com.example.compilers_laba {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
@@ -9,6 +9,7 @@ module com.example.compilers_laba1 {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires java.desktop;
 
     opens com.example.compilers_laba1 to javafx.fxml;
     exports com.example.compilers_laba1;
