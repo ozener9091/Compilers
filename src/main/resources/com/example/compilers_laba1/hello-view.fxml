@@ -1,16 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.compilers_laba1.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
-
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
+<VBox spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12">
+    <BorderPane>
+        <top>
+            <MenuBar>
+                <Menu text="Файл">
+                    <MenuItem text="Создать" />
+                    <MenuItem text="Открыть"/>
+                    <MenuItem text="Сохранить"/>
+                    <MenuItem text="Сохранить как"/>
+                    <MenuItem text="Выход"/>
+                </Menu>
+                <Menu text="Правка">
+                    <MenuItem text="Отменить"/>
+                    <MenuItem text="Вырезать"/>
+                    <MenuItem text="Копировать"/>
+                    <MenuItem text="Вставить"/>
+                    <MenuItem text="Удалить"/>
+                    <MenuItem text="Выделить все"/>
+                </Menu>
+                <Menu text="Справка">
+                    <MenuItem text="Руководство пользователя"/>
+                    <MenuItem text="О программе"/>
+                </Menu>
+            </MenuBar>
+        </top>
+    </BorderPane>
 </VBox>
