@@ -144,6 +144,7 @@ public class Controller implements Initializable {
         exceptionOutput = new ExceptionOutput(errorLabel);
     }
 
+
     @FXML
     protected void createClick(){
         choosenFile = null;
