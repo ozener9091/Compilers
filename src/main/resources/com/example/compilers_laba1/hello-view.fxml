@@ -108,9 +108,19 @@
 
         <VBox>
             <TextArea fx:id="textArea" VBox.vgrow="ALWAYS"></TextArea>
+            <HBox alignment="BOTTOM_RIGHT">
+                <Button onAction="#increaseInputClick" text="+"></Button>
+                <Button onAction="#decreaseInputClick" text="-"></Button>
+            </HBox>
         </VBox>
 
-        <VBox><Label>Тут выводится что-то...</Label></VBox>
+        <VBox>
+            <Label fx:id="outputLabel" VBox.vgrow="ALWAYS">Тут выводится что-то...</Label>
+            <HBox alignment="BOTTOM_RIGHT">
+                <Button onAction="#increaseOutputClick" text="+"></Button>
+                <Button onAction="#decreaseOutputClick" text="-"></Button>
+            </HBox>
+        </VBox>
     </SplitPane>
 
 </VBox>

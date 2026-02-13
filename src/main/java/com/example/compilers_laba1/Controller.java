@@ -9,6 +9,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
+import javafx.scene.text.Font;
 
 import java.awt.*;
 import java.io.File;
@@ -20,6 +21,9 @@ public class Controller {
 
     @FXML
     private TextArea textArea;
+    @FXML
+    private Label outputLabel;
+
     private File choosenFile = null;
 
     @FXML
@@ -142,5 +146,27 @@ public class Controller {
         alert.showAndWait();
     }
 
+    @FXML
+    protected  void increaseInputClick() {
+        Font lateFont = textArea.getFont();
+        textArea.setFont(Font.font("Arial", lateFont.getSize() + 2));
+    }
 
+    @FXML
+    protected  void decreaseInputClick() {
+        Font lateFont = textArea.getFont();
+        textArea.setFont(Font.font("Arial", lateFont.getSize() - 2));
+    }
+
+    @FXML
+    protected  void increaseOutputClick() {
+        Font lateFont = outputLabel.getFont();
+        outputLabel.setFont(Font.font("Arial", lateFont.getSize() + 2));
+    }
+
+    @FXML
+    protected  void decreaseOutputClick() {
+        Font lateFont = outputLabel.getFont();
+        outputLabel.setFont(Font.font("Arial", lateFont.getSize() - 2));
+    }
 }
