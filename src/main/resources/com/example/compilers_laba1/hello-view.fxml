@@ -105,11 +105,18 @@
             </HBox>
         </VBox>
         <VBox>
-            <Label fx:id="outputLabel" VBox.vgrow="ALWAYS">Тут выводится что-то...</Label>
-            <HBox alignment="BOTTOM_RIGHT">
-                <Button onAction="#increaseOutputClick" text="+"></Button>
-                <Button onAction="#decreaseOutputClick" text="-"></Button>
-            </HBox>
+            <SplitPane orientation="VERTICAL" dividerPositions="0.5, 0.5" VBox.vgrow="ALWAYS">
+                <VBox>
+                    <Label fx:id="outputLabel" VBox.vgrow="ALWAYS">Тут выводится что-то...</Label>
+                    <HBox alignment="BOTTOM_RIGHT">
+                        <Button onAction="#increaseOutputClick" text="+"></Button>
+                        <Button onAction="#decreaseOutputClick" text="-"></Button>
+                    </HBox>
+                </VBox>
+                <VBox>
+                    <Label fx:id="errorLabel" VBox.vgrow="ALWAYS">Тут все ошибки (Exceptions)</Label>
+                </VBox>
+            </SplitPane>
         </VBox>
     </SplitPane>
 </VBox>
