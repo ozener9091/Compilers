@@ -123,6 +123,7 @@
         </AnchorPane>
 
         <SplitPane orientation="VERTICAL" dividerPositions="0.5, 0.5" VBox.vgrow="ALWAYS">
+
             <!-- Поле вывода -->
             <AnchorPane VBox.vgrow="ALWAYS">
                 <Label fx:id="outputLabel"
@@ -134,6 +135,7 @@
                        style="-fx-padding: 10; -fx-background-color: #f9f9f9;">
                     Тут выводится что-то...
                 </Label>
+
                 <!-- Кнопки resize -->
                 <HBox spacing="5"
                       AnchorPane.bottomAnchor="10.0"
@@ -146,17 +148,26 @@
                             style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
                 </HBox>
             </AnchorPane>
-            <!-- Поле вывода ошибок -->
+
+            <!-- Таблица с ошибками -->
             <AnchorPane VBox.vgrow="ALWAYS">
-                <Label fx:id="errorLabel"
-                       VBox.vgrow="ALWAYS"
-                       AnchorPane.topAnchor="0.0"
-                       AnchorPane.bottomAnchor="0.0"
-                       AnchorPane.leftAnchor="0.0"
-                       AnchorPane.rightAnchor="0.0"
-                       style="-fx-padding: 10; -fx-background-color: #ffebee; -fx-text-fill: #c62828;">
-                    Тут все ошибки (Exceptions)
-                </Label>
+                <VBox spacing="5"
+                      AnchorPane.topAnchor="0.0"
+                      AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0"
+                      AnchorPane.rightAnchor="0.0">
+
+                    <Label text="Ошибки" maxWidth="Infinity" alignment="CENTER" style="-fx-font-weight: bold; -fx-padding: 5;"/>
+
+                    <TableView fx:id="errorTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="typeColumn" text="Тип"/>
+                            <TableColumn fx:id="contentColumn" text="Содержание"/>
+                            <TableColumn fx:id="pageColumn" text="Номер страницы"/>
+                        </columns>
+                    </TableView>
+
+                </VBox>
             </AnchorPane>
         </SplitPane>
     </SplitPane>
