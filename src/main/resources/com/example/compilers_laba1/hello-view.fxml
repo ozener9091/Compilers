@@ -101,6 +101,16 @@
 
     </HBox>
 
-    <TextArea fx:id="textArea"></TextArea>
-    <Label>Тут выводится что-то...</Label>
+    <SplitPane
+            orientation="VERTICAL"
+            dividerPositions="0.5, 0.5"
+            VBox.vgrow="ALWAYS">
+
+        <VBox>
+            <TextArea fx:id="textArea" VBox.vgrow="ALWAYS"></TextArea>
+        </VBox>
+
+        <VBox><Label>Тут выводится что-то...</Label></VBox>
+    </SplitPane>
+
 </VBox>
