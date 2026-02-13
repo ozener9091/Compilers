@@ -8,6 +8,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.TextArea;
 import localization.Localization;
 import save.file.SaveFile;
+import exceptions.ExceptionOutput;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
@@ -92,14 +93,18 @@ public class Controller implements Initializable {
     private TextArea textArea;
     @FXML
     private Label outputLabel;
+    @FXML
+    private Label errorLabel;
 
     private File choosenFile = null;
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
+    private ExceptionOutput exceptionOutput;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         addAllToLocalizationList();
+        getErrorService();
     }
 
     private void addAllToLocalizationList() {
@@ -135,6 +140,9 @@ public class Controller implements Initializable {
         localizationList.add(englishSelectButton);
         localizationList.add(russianSelectButton);
     }
+    private void getErrorService(){
+        exceptionOutput = new ExceptionOutput(errorLabel);
+    }
 
     @FXML
     protected void createClick(){
@@ -155,7 +163,7 @@ public class Controller implements Initializable {
                 String content = Files.readString(choosenFile.toPath());
                 textArea.setText(content);
             } catch (IOException ex) {
-                textArea.setText("Ошибка чтения файла: " + ex.getMessage());
+                exceptionOutput.ThrowException("Ошибка чтения файла.");
             }
         }
     }
@@ -213,7 +221,7 @@ public class Controller implements Initializable {
     protected void selectAllClick() { textArea.selectAll(); }
 
     @FXML
-    protected void aboutClick() {
+    protected void aboutClick() throws ExceptionOutput {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
@@ -238,13 +246,13 @@ public class Controller implements Initializable {
                 Checked: Antonyants E.N.
                 """);
             }
-            default -> throw new IllegalArgumentException("Неподдерживаемый язык локализации");
+            default -> exceptionOutput.ThrowException("Ошибка поддерживаемого языка.");
         }
         alert.showAndWait();
     }
 
     @FXML
-    protected void userManualClick() {
+    protected void userManualClick() throws ExceptionOutput {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
@@ -255,9 +263,15 @@ public class Controller implements Initializable {
                     alert.setTitle("User Manual");
                     alert.setHeaderText("User Manual");
             }
-            default -> throw new IllegalArgumentException("Неподдерживаемый язык локализации");
+            default -> exceptionOutput.ThrowException("Ошибка поддерживаемого языка.");
         }
 
+        Label linkLabel = getLabel();
+        alert.getDialogPane().setContent(linkLabel);
+        alert.showAndWait();
+    }
+
+    private Label getLabel() {
         Label linkLabel = new Label("https://github.com/ozener9091/Compilers_Laba1");
         linkLabel.setStyle(
                 "-fx-text-fill: blue;" +
@@ -267,13 +281,12 @@ public class Controller implements Initializable {
 
         linkLabel.setOnMouseClicked(_ -> {
             try {
-                Desktop.getDesktop().browse(new URI("https://github.com/ozener9091/Compilers_Laba1"));
+                Desktop.getDesktop().browse(new URI("htasdtps://github.com/ozener9091/Compilers_Laba1"));
             } catch (Exception ex) {
-                ex.printStackTrace();
+                exceptionOutput.ThrowException("Ошибка открытия ссылки.");
             }
         });
-        alert.getDialogPane().setContent(linkLabel);
-        alert.showAndWait();
+        return linkLabel;
     }
 
     @FXML
@@ -303,7 +316,7 @@ public class Controller implements Initializable {
     @FXML
     protected void russianSelectClick(){
         for (Object object : localizationList){
-            Localization.setLocalization(object, "Russian");
+            Localization.setLocalization(object, "Russian", exceptionOutput);
         }
         locale = Locale.Russian;
         englishSelectButton.setSelected(false);
@@ -313,7 +326,7 @@ public class Controller implements Initializable {
     @FXML
     protected void englishSelectClick(){
         for (Object object : localizationList){
-            Localization.setLocalization(object, "English");
+            Localization.setLocalization(object, "English", exceptionOutput);
         }
         locale = Locale.English;
         russianSelectButton.setSelected(false);

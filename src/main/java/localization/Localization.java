@@ -2,6 +2,7 @@ package localization;
 
 import javafx.scene.control.*;
 import java.util.*;
+import exceptions.ExceptionOutput;
 
 public class Localization {
 
@@ -43,22 +44,24 @@ public class Localization {
         }
     }
 
-    public static void setLocalization(Object object, String language) {
+    public static void setLocalization(Object object, String language, ExceptionOutput exceptionOutput) {
         if (object == null) return;
 
         switch (language) {
             case "English":
-                setEnglish(object);
+                setEnglish(object, exceptionOutput);
                 break;
             case "Russian":
-                setRussian(object);
+                setRussian(object, exceptionOutput);
                 break;
             default:
-                throw new IllegalArgumentException("Неподдерживаемый язык: " + language);
+                if (exceptionOutput != null) {
+                    exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый язык для локализации.");
+            }
         }
     }
 
-    private static void setEnglish(Object object) {
+    private static void setEnglish(Object object, ExceptionOutput exceptionOutput) {
         switch (object) {
             case Menu menu -> {
                 String englishText = russianToEnglishMap.get(menu.getText());
@@ -84,13 +87,15 @@ public class Localization {
                 String englishPrompt = russianToEnglishMap.get(textArea.getPromptText());
                 if (englishPrompt != null) textArea.setPromptText(englishPrompt);
             }
-            default -> throw new IllegalArgumentException(
-                    "Неподдерживаемый класс: " + object.getClass().getSimpleName()
-            );
+            default -> {
+                if (exceptionOutput != null){
+                    exceptionOutput.ThrowException("Ошибка локализации. Неподдерживамый класс для локализации");
+                }
+            }
         }
     }
 
-    private static void setRussian(Object object) {
+    private static void setRussian(Object object, ExceptionOutput exceptionOutput) {
         switch (object) {
             case Menu menu -> {
                 String russianText = englishToRussianMap.get(menu.getText());
@@ -116,9 +121,7 @@ public class Localization {
                 String russianPrompt = englishToRussianMap.get(textArea.getPromptText());
                 if (russianPrompt != null) textArea.setPromptText(russianPrompt);
             }
-            default -> throw new IllegalArgumentException(
-                    "Неподдерживаемый класс: " + object.getClass().getSimpleName()
-            );
+            default -> exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый класс для локализации.");
         }
     }
 }
