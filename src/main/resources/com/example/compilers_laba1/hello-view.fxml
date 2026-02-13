@@ -6,7 +6,7 @@
 <VBox xmlns="http://javafx.com/javafx/17.0.12"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.compilers_laba1.Controller">
-    <BorderPane >
+    <BorderPane>
         <top>
             <MenuBar>
                 <Menu text="Файл">
@@ -31,6 +31,76 @@
             </MenuBar>
         </top>
     </BorderPane>
+
+    <HBox alignment="CENTER_LEFT" spacing="5" style="-fx-background-color: #f5f5f5; -fx-border-width: 0 0 1 0; -fx-border-color: #ddd;">
+
+        <Button onAction="#createClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="📄+" style="-fx-font-size: 20px; -fx-text-fill: #2196F3; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Создать новый файл (Ctrl+N)"/>
+            </tooltip>
+        </Button>
+
+        <Button onAction="#loadFileClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="📂" style="-fx-font-size: 20px; -fx-text-fill: #4CAF50; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Открыть файл (Ctrl+O)"/>
+            </tooltip>
+        </Button>
+
+        <Button onAction="#saveFileClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="💾" style="-fx-font-size: 20px; -fx-text-fill: #FF9800; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Сохранить (Ctrl+S)"/>
+            </tooltip>
+        </Button>
+
+        <Separator orientation="VERTICAL" style="-fx-padding: 0 5 0 5;"/>
+
+        <Button onAction="#undoClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="↩️" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Отменить (Ctrl+Z)"/>
+            </tooltip>
+        </Button>
+
+        <Button onAction="#copyClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="📋" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Копировать (Ctrl+C)"/>
+            </tooltip>
+        </Button>
+
+        <Button onAction="#cutClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="✂️" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Вырезать (Ctrl+X)"/>
+            </tooltip>
+        </Button>
+
+        <Button onAction="#pasteClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="📌" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip text="Вставить (Ctrl+V)"/>
+            </tooltip>
+        </Button>
+
+    </HBox>
+
     <TextArea fx:id="textArea"></TextArea>
     <Label>Тут выводится что-то...</Label>
 </VBox>
