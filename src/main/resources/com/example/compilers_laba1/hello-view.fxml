@@ -10,11 +10,11 @@
         <top>
             <MenuBar>
                 <Menu text="Файл">
-                    <MenuItem text="Создать"/>
-                    <MenuItem text="Открыть"/>
-                    <MenuItem text="Сохранить"/>
-                    <MenuItem text="Сохранить как"/>
-                    <MenuItem text="Выход"/>
+                    <MenuItem text="Создать" onAction="#createClick"/>
+                    <MenuItem text="Открыть" onAction="#loadFileClick"/>
+                    <MenuItem text="Сохранить" onAction="#saveFileClick"/>
+                    <MenuItem text="Сохранить как" onAction="#saveAsFileClick"/>
+                    <MenuItem text="Выход" onAction="#exitClick"/>
                 </Menu>
                 <Menu text="Правка">
                     <MenuItem text="Отменить" onAction="#undoClick"/>
@@ -22,7 +22,7 @@
                     <MenuItem text="Копировать" onAction="#copyClick"/>
                     <MenuItem text="Вставить" onAction="#pasteClick"/>
                     <MenuItem text="Удалить" onAction="#removeClick"/>
-                    <MenuItem text="Выделить все"/>
+                    <MenuItem text="Выделить все" onAction="#selectAllClick"/>
                 </Menu>
                 <Menu text="Справка">
                     <MenuItem text="Руководство пользователя" onAction="#userManualClick"/>

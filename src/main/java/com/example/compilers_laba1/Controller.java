@@ -1,23 +1,87 @@
 package com.example.compilers_laba1;
+import javafx.application.Platform;
+import javafx.scene.control.ButtonType;
+import save.file.SaveFile;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.stage.FileChooser;
 
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 
 public class Controller {
 
     @FXML
     private TextArea textArea;
+    private File choosenFile = null;
 
     @FXML
-    protected void undoClick(){
-        textArea.undo();
+    protected void createClick(){
+        choosenFile = null;
+        textArea.clear();
     }
+
+    @FXML
+    protected void loadFileClick() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt")
+        );
+        choosenFile = fileChooser.showOpenDialog(textArea.getScene().getWindow());
+
+        if (choosenFile != null) {
+            try {
+                String content = Files.readString(choosenFile.toPath());
+                textArea.setText(content);
+            } catch (IOException ex) {
+                textArea.setText("Ошибка чтения файла: " + ex.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    protected void saveFileClick() {
+        if (choosenFile != null) {
+            SaveFile.saveFile(textArea, choosenFile);
+        }
+        else{
+            SaveFile.saveAsFile(textArea);
+        }
+    }
+
+    @FXML
+    protected void saveAsFileClick(){
+        SaveFile.saveAsFile(textArea);
+    }
+
+    @FXML
+    protected void exitClick() {
+        if (choosenFile == null || textArea.isEditable()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Подтверждение");
+            alert.setHeaderText("Сохранение файла");
+            alert.setContentText("Сохранить файл перед выходом?");
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    SaveFile.saveAsFile(textArea);
+                } else {
+                    Platform.exit();
+                }
+            });
+        }
+        else Platform.exit();
+    }
+
+    @FXML
+    protected void undoClick() { textArea.undo(); }
 
     @FXML
     protected void cutClick(){
@@ -34,9 +98,10 @@ public class Controller {
     }
 
     @FXML
-    protected void removeClick(){
-        textArea.clear();
-    }
+    protected void removeClick() { textArea.clear(); }
+
+    @FXML
+    protected void selectAllClick() { textArea.selectAll(); }
 
     @FXML
     protected void aboutClick() {
