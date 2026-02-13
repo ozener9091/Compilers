@@ -1,17 +1,16 @@
 package exceptions;
-
-import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
 
 public class ExceptionOutput extends Throwable {
 
-    private final Label errorLabel;
+    private final TableView errorTable;
 
-    public ExceptionOutput(Label errorLabel) {
-        this.errorLabel = errorLabel;
+    public ExceptionOutput(TableView errorTable) {
+        this.errorTable = errorTable;
     }
 
     public void ThrowException(String message){
-        errorLabel.setText(errorLabel + "\n" + message);
+
     }
 }
 

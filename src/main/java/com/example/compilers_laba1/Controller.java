@@ -1,5 +1,6 @@
 package com.example.compilers_laba1;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
@@ -7,8 +8,9 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.TextArea;
 import localization.Localization;
+
 import save.file.SaveFile;
-import exceptions.ExceptionOutput;
+import exceptions.*;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
@@ -93,8 +95,15 @@ public class Controller implements Initializable {
     private TextArea textArea;
     @FXML
     private Label outputLabel;
+
     @FXML
-    private Label errorLabel;
+    private TableView<ErrorEntry> errorTable;
+    @FXML
+    private TableColumn<ErrorEntry, String> typeColumn;
+    @FXML
+    private TableColumn<ErrorEntry, String> contentColumn;
+    @FXML
+    private TableColumn<ErrorEntry, String> pageColumn;
 
     private File choosenFile = null;
     private Locale locale = Locale.Russian;
@@ -105,6 +114,7 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         addAllToLocalizationList();
         getErrorService();
+        initErrorTable();
     }
 
     private void addAllToLocalizationList() {
@@ -141,7 +151,27 @@ public class Controller implements Initializable {
         localizationList.add(russianSelectButton);
     }
     private void getErrorService(){
-        exceptionOutput = new ExceptionOutput(errorLabel);
+        exceptionOutput = new ExceptionOutput(errorTable);
+    }
+    private void initErrorTable() {
+        typeColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getType()));
+
+        contentColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getContent()));
+
+        pageColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getPage()));
+
+        typeColumn.prefWidthProperty().bind(errorTable.widthProperty().divide(3));
+        contentColumn.prefWidthProperty().bind(errorTable.widthProperty().divide(3));
+        pageColumn.prefWidthProperty().bind(errorTable.widthProperty().divide(3));
+
+        errorTable.getItems().addAll(
+                new ErrorEntry("Ошибка синтаксиса", "Неожиданный символ ';'", "15"),
+                new ErrorEntry("Предупреждение", "Неиспользуемая переменная 'x'", "23"),
+                new ErrorEntry("Ошибка компиляции", "Метод не найден", "42")
+        );
     }
 
 
@@ -187,7 +217,7 @@ public class Controller implements Initializable {
     @FXML
     protected void exitClick() {
         if (choosenFile == null || textArea.isEditable()) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            Alert alert = new Alert(AlertType.CONFIRMATION);
             alert.setTitle("Подтверждение");
             alert.setHeaderText("Сохранение файла");
             alert.setContentText("Сохранить файл перед выходом?");
