@@ -101,78 +101,65 @@
         </Button>
     </HBox>
 
+    <!-- Поле с информацией об открытом файле (путь) -->
     <Label fx:id="statusLabel" VBox.vgrow="ALWAYS" alignment="CENTER"></Label>
 
-    <SplitPane orientation="VERTICAL" dividerPositions="0.5, 0.5" VBox.vgrow="ALWAYS">
-
-
+    <SplitPane orientation="VERTICAL" dividerPositions="0.3" VBox.vgrow="ALWAYS">
+        <!-- Поле ввода -->
         <AnchorPane VBox.vgrow="ALWAYS">
-            <!-- Поле ввода -->
             <CodeArea fx:id="codeArea"
-                      AnchorPane.topAnchor="0.0"
-                      AnchorPane.bottomAnchor="0.0"
-                      AnchorPane.leftAnchor="0.0"
-                      AnchorPane.rightAnchor="0.0"/>
-            <!-- Кнопки resize -->
+                      AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
             <HBox spacing="5"
-                  AnchorPane.bottomAnchor="10.0"
-                  AnchorPane.rightAnchor="10.0">
-                <Button onAction="#increaseInputClick"
-                        text="+"
+                  AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                <Button onAction="#increaseInputClick" text="+"
                         style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
-                <Button onAction="#decreaseInputClick"
-                        text="-"
+                <Button onAction="#decreaseInputClick" text="-"
                         style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
             </HBox>
         </AnchorPane>
 
-        <SplitPane orientation="VERTICAL" dividerPositions="0.5, 0.5" VBox.vgrow="ALWAYS">
+        <VBox VBox.vgrow="ALWAYS">
+            <!-- Меню модулей -->
+            <MenuBar>
+                <Menu fx:id="analyzerLabel" text="Анализатор"/>
+                <Menu fx:id="pseudoCodeLabel" text="Псевдокод"/>
+                <Menu fx:id="controlFlowGraphLabel" text="Граф потока управления"/>
+            </MenuBar>
 
-            <!-- Поле вывода -->
-            <AnchorPane VBox.vgrow="ALWAYS">
-                <Label fx:id="outputLabel"
-                       VBox.vgrow="ALWAYS"
-                       AnchorPane.topAnchor="0.0"
-                       AnchorPane.bottomAnchor="0.0"
-                       AnchorPane.leftAnchor="0.0"
-                       AnchorPane.rightAnchor="0.0"
-                       style="-fx-padding: 10; -fx-background-color: #f9f9f9;">
-                    Тут выводится что-то...
-                </Label>
+            <SplitPane orientation="VERTICAL" dividerPositions="0.5" VBox.vgrow="ALWAYS">
+                <!-- Поле вывода -->
+                <AnchorPane VBox.vgrow="ALWAYS">
+                    <Label fx:id="outputLabel"
+                           VBox.vgrow="ALWAYS"
+                           AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                        Тут выводится что-то...
+                    </Label>
+                    <HBox spacing="5"
+                          AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+                        <Button onAction="#increaseOutputClick" text="+"
+                                style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
+                        <Button onAction="#decreaseOutputClick" text="-"
+                                style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
+                    </HBox>
+                </AnchorPane>
 
-                <!-- Кнопки resize -->
-                <HBox spacing="5"
-                      AnchorPane.bottomAnchor="10.0"
-                      AnchorPane.rightAnchor="10.0">
-                    <Button onAction="#increaseOutputClick"
-                            text="+"
-                            style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
-                    <Button onAction="#decreaseOutputClick"
-                            text="-"
-                            style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
-                </HBox>
-            </AnchorPane>
-
-            <!-- Таблица с ошибками -->
-            <AnchorPane VBox.vgrow="ALWAYS">
-                <VBox spacing="5"
-                      AnchorPane.topAnchor="0.0"
-                      AnchorPane.bottomAnchor="0.0"
-                      AnchorPane.leftAnchor="0.0"
-                      AnchorPane.rightAnchor="0.0">
-
-                    <Label text="Ошибки" maxWidth="Infinity" alignment="CENTER" style="-fx-font-weight: bold; -fx-padding: 5;"/>
-
-                    <TableView fx:id="errorTable" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="typeColumn" text="Тип"/>
-                            <TableColumn fx:id="contentColumn" text="Содержание"/>
-                            <TableColumn fx:id="pageColumn" text="Номер страницы"/>
-                        </columns>
-                    </TableView>
-
-                </VBox>
-            </AnchorPane>
-        </SplitPane>
+                <!-- Таблица с ошибками -->
+                <AnchorPane VBox.vgrow="ALWAYS">
+                    <VBox spacing="5"
+                          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                        <TableView fx:id="errorTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="typeColumn" text="Тип"/>
+                                <TableColumn fx:id="contentColumn" text="Содержание"/>
+                                <TableColumn fx:id="pageColumn" text="Номер страницы"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </AnchorPane>
+            </SplitPane>
+        </VBox>
     </SplitPane>
 </VBox>

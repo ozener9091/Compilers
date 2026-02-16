@@ -21,7 +21,6 @@ import exceptions.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
-import javafx.scene.text.Font;
 
 import java.awt.*;
 import java.io.File;
@@ -39,9 +38,11 @@ enum Locale {
 
 public class Controller implements Initializable {
 
+    //  Главное окно
     @FXML
     private VBox mainWindow;
 
+    //  Меню файл
     @FXML
     private Menu fileLabel;
     @FXML
@@ -55,6 +56,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem exitButton;
 
+    //  Меню правка
     @FXML
     private Menu editLabel;
     @FXML
@@ -70,6 +72,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem selectAllButton;
 
+    //  Меню справка
     @FXML
     private Menu aboutLabel;
     @FXML
@@ -77,6 +80,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem aboutButton;
 
+    //  Меню язык
     @FXML
     private Menu languageLabel;
     @FXML
@@ -84,6 +88,7 @@ public class Controller implements Initializable {
     @FXML
     private RadioMenuItem russianSelectButton;
 
+    //  Панель инструментов
     @FXML
     private Tooltip createTooltip;
     @FXML
@@ -99,15 +104,27 @@ public class Controller implements Initializable {
     @FXML
     private Tooltip pasteTooltip;
 
+    //  Поле состояния
     @FXML
     private Label statusLabel;
 
-
+    //  Поле ввода
     @FXML
     private CodeArea codeArea;
+
+    //  Меню модулей
+    @FXML
+    private Menu analyzerLabel;
+    @FXML
+    private Menu pseudoCodeLabel;
+    @FXML
+    private Menu controlFlowGraphLabel;
+
+    //  Поле вывода
     @FXML
     private Label outputLabel;
 
+    //  Таблица с ошибками
     @FXML
     private TableView<ErrorEntry> errorTable;
     @FXML
@@ -122,10 +139,17 @@ public class Controller implements Initializable {
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
+    private double inputCurrentFontSize = 14;
+    private double outputCurrentFontSize = 14;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
+
         initWindowStyle();
+        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
+        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
+
         addAllToLocalizationList();
         getErrorService();
         getDragAndDropService();
@@ -135,17 +159,21 @@ public class Controller implements Initializable {
     }
 
     private void addAllToLocalizationList() {
+
+        //  Меню
         localizationList.add(fileLabel);
         localizationList.add(editLabel);
         localizationList.add(aboutLabel);
         localizationList.add(languageLabel);
 
+        //  Панель файл
         localizationList.add(createButton);
         localizationList.add(loadFileButton);
         localizationList.add(saveButton);
         localizationList.add(saveAsButton);
         localizationList.add(exitButton);
 
+        //  Меню правка
         localizationList.add(undoButton);
         localizationList.add(cutButton);
         localizationList.add(copyButton);
@@ -153,9 +181,15 @@ public class Controller implements Initializable {
         localizationList.add(removeButton);
         localizationList.add(selectAllButton);
 
+        //  Меню справка
         localizationList.add(userManualButton);
         localizationList.add(aboutButton);
 
+        //  Меню язык
+        localizationList.add(englishSelectButton);
+        localizationList.add(russianSelectButton);
+
+        //  Панель инструментов
         localizationList.add(createTooltip);
         localizationList.add(openTooltip);
         localizationList.add(saveTooltip);
@@ -164,8 +198,15 @@ public class Controller implements Initializable {
         localizationList.add(cutTooltip);
         localizationList.add(pasteTooltip);
 
-        localizationList.add(englishSelectButton);
-        localizationList.add(russianSelectButton);
+        //  Меню вывода
+        localizationList.add(analyzerLabel);
+        localizationList.add(pseudoCodeLabel);
+        localizationList.add(controlFlowGraphLabel);
+
+        //  Таблица с ошибками
+        localizationList.add(typeColumn);
+        localizationList.add(contentColumn);
+        localizationList.add(pageColumn);
     }
     private void getErrorService(){
         exceptionOutput = new ExceptionOutput(errorTable);
@@ -181,12 +222,10 @@ public class Controller implements Initializable {
         HighlightingService.setupSyntaxHighlighting(codeArea);
     }
     private void initHotkeys(){
-        HotkeysService.initHotkeysService(mainWindow, KeyCombination.valueOf("Ctrl+N"), this::createClick);
-        HotkeysService.initHotkeysService(mainWindow, KeyCombination.valueOf("Ctrl+O"), this::loadFileClick);
-        HotkeysService.initHotkeysService(mainWindow, KeyCombination.valueOf("Ctrl+S"), this::saveFileClick);
+        HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+N"), this::createClick);
+        HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+O"), this::loadFileClick);
+        HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+S"), this::saveFileClick);
     }
-
-
 
     @FXML
     protected void createClick(){
@@ -331,30 +370,31 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    protected  void increaseInputClick() {
-        double sizeStr = Double.parseDouble(codeArea.getStyle().replaceAll(".*-fx-font-size:\\s*(\\d+).*", "$1"));
-        if (sizeStr >= 24) return;
-        codeArea.setStyle("-fx-font-size: " + (sizeStr + 2) + "px;");
+    protected void increaseInputClick() {
+        if (inputCurrentFontSize >= 24) return;
+        inputCurrentFontSize += 2;
+        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
     }
+
     @FXML
-    protected  void decreaseInputClick() {
-        double sizeStr = Double.parseDouble(codeArea.getStyle().replaceAll(".*-fx-font-size:\\s*(\\d+).*", "$1"));
-        if (sizeStr <= 12) return;
-        codeArea.setStyle("-fx-font-size: " + (sizeStr - 2) + "px;");
+    protected void decreaseInputClick() {
+        if (inputCurrentFontSize <= 14) return;
+        inputCurrentFontSize -= 2;
+        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
     }
 
     @FXML
     protected  void increaseOutputClick() {
-        Font lateFont = outputLabel.getFont();
-        if (lateFont.getSize() >= 24) return;
-        outputLabel.setFont(Font.font("Arial", lateFont.getSize() + 2));
+        if (outputCurrentFontSize >= 24) return;
+        outputCurrentFontSize += 2;
+        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
 
     @FXML
     protected  void decreaseOutputClick() {
-        Font lateFont = outputLabel.getFont();
-        if (lateFont.getSize() <= 12) return;
-        outputLabel.setFont(Font.font("Arial", lateFont.getSize() - 2));
+        if (outputCurrentFontSize <= 14) return;
+        outputCurrentFontSize -= 2;
+        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
 
     @FXML
