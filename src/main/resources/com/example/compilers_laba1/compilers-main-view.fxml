@@ -100,8 +100,10 @@
         </Button>
     </HBox>
 
+    <Label fx:id="statusLabel" VBox.vgrow="ALWAYS" alignment="CENTER"></Label>
 
     <SplitPane orientation="VERTICAL" dividerPositions="0.5, 0.5" VBox.vgrow="ALWAYS">
+
 
         <AnchorPane VBox.vgrow="ALWAYS">
             <!-- Поле ввода -->

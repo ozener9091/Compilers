@@ -93,6 +93,9 @@ public class Controller implements Initializable {
     @FXML
     private Tooltip pasteTooltip;
 
+    @FXML
+    private Label statusLabel;
+
 
     @FXML
     private CodeArea codeArea;
@@ -190,6 +193,7 @@ public class Controller implements Initializable {
             try {
                 String content = Files.readString(choosenFile.toPath());
                 codeArea.replaceText(content);
+                statusLabel.setText(choosenFile.getAbsolutePath());
             } catch (IOException ex) {
                 exceptionOutput.ThrowException("Ошибка чтения файла.");
             }
@@ -201,15 +205,15 @@ public class Controller implements Initializable {
 
         choosenFile = choosenFileProperty.get();
         if (choosenFile != null) {
-            SaveFile.saveFile(codeArea, choosenFile);
+            SaveFile.saveFile(codeArea, choosenFile, statusLabel);
         } else {
-            SaveFile.saveAsFile(codeArea);
+            SaveFile.saveAsFile(codeArea, statusLabel);
         }
     }
 
     @FXML
     protected void saveAsFileClick(){
-        SaveFile.saveAsFile(codeArea);
+        SaveFile.saveAsFile(codeArea,  statusLabel);
     }
 
     @FXML
@@ -222,7 +226,7 @@ public class Controller implements Initializable {
 
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
-                    SaveFile.saveAsFile(codeArea);
+                    SaveFile.saveAsFile(codeArea, statusLabel);
                 } else {
                     Platform.exit();
                 }
