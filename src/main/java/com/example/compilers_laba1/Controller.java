@@ -120,6 +120,7 @@ public class Controller implements Initializable {
         ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
         getDragAndDropService();
         initLineNumber();
+        codeArea.setStyle("-fx-font-size: " + 14 + "px;");
 
     }
 
@@ -311,25 +312,28 @@ public class Controller implements Initializable {
 
     @FXML
     protected  void increaseInputClick() {
-        //Font lateFont = codeArea.getFont();
-        //codeArea.setFont(Font.font("Arial", lateFont.getSize() + 2));
+        double sizeStr = Double.parseDouble(codeArea.getStyle().replaceAll(".*-fx-font-size:\\s*(\\d+).*", "$1"));
+        if (sizeStr >= 24) return;
+        codeArea.setStyle("-fx-font-size: " + (sizeStr + 2) + "px;");
     }
-
     @FXML
     protected  void decreaseInputClick() {
-        //Font lateFont = codeArea.getFont();
-        //codeArea.setFont(Font.font("Arial", lateFont.getSize() - 2));
+        double sizeStr = Double.parseDouble(codeArea.getStyle().replaceAll(".*-fx-font-size:\\s*(\\d+).*", "$1"));
+        if (sizeStr <= 12) return;
+        codeArea.setStyle("-fx-font-size: " + (sizeStr - 2) + "px;");
     }
 
     @FXML
     protected  void increaseOutputClick() {
         Font lateFont = outputLabel.getFont();
+        if (lateFont.getSize() >= 24) return;
         outputLabel.setFont(Font.font("Arial", lateFont.getSize() + 2));
     }
 
     @FXML
     protected  void decreaseOutputClick() {
         Font lateFont = outputLabel.getFont();
+        if (lateFont.getSize() <= 12) return;
         outputLabel.setFont(Font.font("Arial", lateFont.getSize() - 2));
     }
 
