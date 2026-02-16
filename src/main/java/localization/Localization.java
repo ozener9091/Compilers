@@ -32,11 +32,18 @@ public class Localization {
             Map.entry("Отменить (Ctrl+Z)", "Undo (Ctrl+Z)"),
             Map.entry("Копировать (Ctrl+C)", "Copy (Ctrl+C)"),
             Map.entry("Вырезать (Ctrl+X)", "Cut (Ctrl+X)"),
-            Map.entry("Вставить (Ctrl+V)", "Paste (Ctrl+V)")
+            Map.entry("Вставить (Ctrl+V)", "Paste (Ctrl+V)"),
+            Map.entry("Анализатор", "Analyzer"),
+            Map.entry("Псевдокод", "Pseudocode"),
+            Map.entry("Граф потока управления", "Control Flow Graph"),
+            Map.entry("Тип", "Type"),
+            Map.entry("Содержание", "Content"),
+            Map.entry("Номер страницы", "Page number")
     );
 
     private static final Map<String, String> englishToRussianMap = new HashMap<>();
     private static final Map<String, String> russianToEnglishMap = new HashMap<>();
+
     static {
         for (Map.Entry<String, String> entry : russianLocalizationMap.entrySet()) {
             russianToEnglishMap.put(entry.getKey(), entry.getValue());
@@ -84,8 +91,12 @@ public class Localization {
                 if (englishText != null) button.setText(englishText);
             }
             case TextArea textArea -> {
-                String englishPrompt = russianToEnglishMap.get(textArea.getPromptText());
-                if (englishPrompt != null) textArea.setPromptText(englishPrompt);
+                String englishText = russianToEnglishMap.get(textArea.getPromptText());
+                if (englishText != null) textArea.setPromptText(englishText);
+            }
+            case TableColumn<?, ?> tableColumn -> {
+                String englishText = russianToEnglishMap.get(tableColumn.getText());
+                if (englishText != null) tableColumn.setText(englishText);
             }
             default -> {
                 if (exceptionOutput != null){

@@ -7,7 +7,6 @@
     -fx-fill: green;
 }
 
-/* Можно добавить стиль для фона и шрифта всей области */
 .code-area {
     -fx-font-family: 'Monospaced';
     -fx-font-size: 14px;
