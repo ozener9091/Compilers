@@ -6,7 +6,8 @@
 
 <VBox xmlns="http://javafx.com/javafx/17.0.12"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.compilers_laba1.Controller">
+      fx:controller="com.example.compilers_laba1.Controller"
+      fx:id="mainWindow">
 
     <!-- Меню -->
     <BorderPane>
