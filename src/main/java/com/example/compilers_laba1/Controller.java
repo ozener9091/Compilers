@@ -1,5 +1,6 @@
 package com.example.compilers_laba1;
 import drapAndDropFile.DragAndDropService;
+import highlighting.HighlightingService;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.Initializable;
@@ -115,13 +116,11 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        initWindowStyle();
         addAllToLocalizationList();
         getErrorService();
-        ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
         getDragAndDropService();
         initLineNumber();
-        codeArea.setStyle("-fx-font-size: " + 14 + "px;");
-
     }
 
     private void addAllToLocalizationList() {
@@ -159,12 +158,16 @@ public class Controller implements Initializable {
     }
     private void getErrorService(){
         exceptionOutput = new ExceptionOutput(errorTable);
+        ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
     }
     private void getDragAndDropService(){
         choosenFileProperty = DragAndDropService.setupDragAndDrop(codeArea);
     }
     private void initLineNumber(){
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+    }
+    private void initWindowStyle(){
+        HighlightingService.setupSyntaxHighlighting(codeArea);
     }
 
 

@@ -11,6 +11,7 @@ module com.example.compilers_laba {
     requires eu.hansolo.tilesfx;
     requires java.desktop;
     requires org.fxmisc.richtext;
+    requires reactfx;
 
     opens com.example.compilers_laba1 to javafx.fxml;
     exports com.example.compilers_laba1;
