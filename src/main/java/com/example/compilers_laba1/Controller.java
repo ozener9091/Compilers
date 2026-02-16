@@ -1,6 +1,7 @@
 package com.example.compilers_laba1;
 import drapAndDropFile.DragAndDropService;
 import highlighting.HighlightingService;
+import hotkeysService.HotkeysService;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.Initializable;
@@ -8,6 +9,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.VBox;
 import localization.Localization;
 
 import org.fxmisc.richtext.CodeArea;
@@ -35,6 +38,9 @@ enum Locale {
 }
 
 public class Controller implements Initializable {
+
+    @FXML
+    private VBox mainWindow;
 
     @FXML
     private Menu fileLabel;
@@ -124,6 +130,8 @@ public class Controller implements Initializable {
         getErrorService();
         getDragAndDropService();
         initLineNumber();
+        initHotkeys();
+
     }
 
     private void addAllToLocalizationList() {
@@ -171,6 +179,11 @@ public class Controller implements Initializable {
     }
     private void initWindowStyle(){
         HighlightingService.setupSyntaxHighlighting(codeArea);
+    }
+    private void initHotkeys(){
+        HotkeysService.initHotkeysService(mainWindow, KeyCombination.valueOf("Ctrl+N"), this::createClick);
+        HotkeysService.initHotkeysService(mainWindow, KeyCombination.valueOf("Ctrl+O"), this::loadFileClick);
+        HotkeysService.initHotkeysService(mainWindow, KeyCombination.valueOf("Ctrl+S"), this::saveFileClick);
     }
 
 
