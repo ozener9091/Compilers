@@ -35,8 +35,6 @@ public class SaveFile {
         try {
             String content = textArea.getText();
             Files.writeString(file.toPath(), content);
-            Stage stage = (Stage) textArea.getScene().getWindow();
-            stage.setTitle("Редактор - " + file.getName());
 
         } catch (IOException ex) {
             ex.printStackTrace();

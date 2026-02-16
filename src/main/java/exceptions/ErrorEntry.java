@@ -3,6 +3,7 @@ package exceptions;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+
 public class ErrorEntry {
 
     private final StringProperty type = new SimpleStringProperty();
@@ -26,4 +27,6 @@ public class ErrorEntry {
     public StringProperty typeProperty() { return type; }
     public StringProperty contentProperty() { return content; }
     public StringProperty pageProperty() { return page; }
+
 }
+
