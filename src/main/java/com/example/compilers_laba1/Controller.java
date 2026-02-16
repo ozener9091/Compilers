@@ -1,6 +1,7 @@
 package com.example.compilers_laba1;
+import drapAndDropFile.DragAndDropService;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
@@ -106,6 +107,7 @@ public class Controller implements Initializable {
     private TableColumn<ErrorEntry, String> pageColumn;
 
     private File choosenFile = null;
+    private ObjectProperty<File> choosenFileProperty;
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
@@ -114,7 +116,9 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         addAllToLocalizationList();
         getErrorService();
-        initErrorTable();
+        ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
+        getDragAndDropService();
+
     }
 
     private void addAllToLocalizationList() {
@@ -153,26 +157,10 @@ public class Controller implements Initializable {
     private void getErrorService(){
         exceptionOutput = new ExceptionOutput(errorTable);
     }
-    private void initErrorTable() {
-        typeColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getType()));
-
-        contentColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getContent()));
-
-        pageColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getPage()));
-
-        typeColumn.prefWidthProperty().bind(errorTable.widthProperty().divide(3));
-        contentColumn.prefWidthProperty().bind(errorTable.widthProperty().divide(3));
-        pageColumn.prefWidthProperty().bind(errorTable.widthProperty().divide(3));
-
-        errorTable.getItems().addAll(
-                new ErrorEntry("Ошибка синтаксиса", "Неожиданный символ ';'", "15"),
-                new ErrorEntry("Предупреждение", "Неиспользуемая переменная 'x'", "23"),
-                new ErrorEntry("Ошибка компиляции", "Метод не найден", "42")
-        );
+    private void getDragAndDropService(){
+        choosenFileProperty = DragAndDropService.setupDragAndDrop(textArea);
     }
+
 
 
     @FXML
@@ -201,10 +189,11 @@ public class Controller implements Initializable {
 
     @FXML
     protected void saveFileClick() {
+
+        choosenFile = choosenFileProperty.get();
         if (choosenFile != null) {
             SaveFile.saveFile(textArea, choosenFile);
-        }
-        else{
+        } else {
             SaveFile.saveAsFile(textArea);
         }
     }
@@ -297,12 +286,6 @@ public class Controller implements Initializable {
             default -> exceptionOutput.ThrowException("Ошибка поддерживаемого языка.");
         }
 
-        Label linkLabel = getLabel();
-        alert.getDialogPane().setContent(linkLabel);
-        alert.showAndWait();
-    }
-
-    private Label getLabel() {
         Label linkLabel = new Label("https://github.com/ozener9091/Compilers_Laba1");
         linkLabel.setStyle(
                 "-fx-text-fill: blue;" +
@@ -317,7 +300,8 @@ public class Controller implements Initializable {
                 exceptionOutput.ThrowException("Ошибка открытия ссылки.");
             }
         });
-        return linkLabel;
+        alert.getDialogPane().setContent(linkLabel);
+        alert.showAndWait();
     }
 
     @FXML
