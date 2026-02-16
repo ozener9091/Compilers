@@ -2,9 +2,9 @@ package drapAndDropFile;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.control.TextArea;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import org.fxmisc.richtext.CodeArea;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +13,11 @@ import java.util.List;
 
 public class DragAndDropService {
 
-    public static ObjectProperty<File> setupDragAndDrop(TextArea textArea) {
+    public static ObjectProperty<File> setupDragAndDrop(CodeArea codeArea) {
 
         ObjectProperty<File> fileProperty = new SimpleObjectProperty<>();
 
-        textArea.setOnDragOver(event -> {
+        codeArea.setOnDragOver(event -> {
             Dragboard dragboard = event.getDragboard();
             if (dragboard.hasFiles()) {
                 File file = dragboard.getFiles().getFirst();
@@ -28,7 +28,7 @@ public class DragAndDropService {
             event.consume();
         });
 
-        textArea.setOnDragDropped(event -> {
+        codeArea.setOnDragDropped(event -> {
             Dragboard dragboard = event.getDragboard();
             boolean success = false;
 
@@ -39,13 +39,13 @@ public class DragAndDropService {
                     if (file.getName().toLowerCase().endsWith(".txt")) {
                         try {
                             String content = Files.readString(file.toPath());
-                            textArea.setText(content);
+                            codeArea.replaceText(content);
 
                             fileProperty.set(file);
 
                             success = true;
                         } catch (IOException e) {
-                            textArea.setText("Ошибка чтения файла: " + e.getMessage());
+                            codeArea.replaceText("Ошибка чтения файла: " + e.getMessage());
                         }
                     }
                 }

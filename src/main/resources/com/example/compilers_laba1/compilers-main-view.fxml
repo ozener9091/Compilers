@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.fxmisc.richtext.CodeArea?>
 
 <VBox xmlns="http://javafx.com/javafx/17.0.12"
       xmlns:fx="http://javafx.com/fxml"
@@ -104,7 +105,7 @@
 
         <AnchorPane VBox.vgrow="ALWAYS">
             <!-- Поле ввода -->
-            <TextArea fx:id="textArea"
+            <CodeArea fx:id="codeArea"
                       AnchorPane.topAnchor="0.0"
                       AnchorPane.bottomAnchor="0.0"
                       AnchorPane.leftAnchor="0.0"

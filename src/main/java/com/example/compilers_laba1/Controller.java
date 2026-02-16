@@ -7,9 +7,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
-import javafx.scene.control.TextArea;
 import localization.Localization;
 
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.LineNumberFactory;
 import save.file.SaveFile;
 import exceptions.*;
 
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 enum Locale {
-    English, Russian;
+    English, Russian
 }
 
 public class Controller implements Initializable {
@@ -93,7 +94,7 @@ public class Controller implements Initializable {
 
 
     @FXML
-    private TextArea textArea;
+    private CodeArea codeArea;
     @FXML
     private Label outputLabel;
 
@@ -118,6 +119,7 @@ public class Controller implements Initializable {
         getErrorService();
         ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
         getDragAndDropService();
+        initLineNumber();
 
     }
 
@@ -158,7 +160,10 @@ public class Controller implements Initializable {
         exceptionOutput = new ExceptionOutput(errorTable);
     }
     private void getDragAndDropService(){
-        choosenFileProperty = DragAndDropService.setupDragAndDrop(textArea);
+        choosenFileProperty = DragAndDropService.setupDragAndDrop(codeArea);
+    }
+    private void initLineNumber(){
+        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
     }
 
 
@@ -166,7 +171,7 @@ public class Controller implements Initializable {
     @FXML
     protected void createClick(){
         choosenFile = null;
-        textArea.clear();
+        codeArea.clear();
     }
 
     @FXML
@@ -175,12 +180,12 @@ public class Controller implements Initializable {
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt")
         );
-        choosenFile = fileChooser.showOpenDialog(textArea.getScene().getWindow());
+        choosenFile = fileChooser.showOpenDialog(codeArea.getScene().getWindow());
 
         if (choosenFile != null) {
             try {
                 String content = Files.readString(choosenFile.toPath());
-                textArea.setText(content);
+                codeArea.replaceText(content);
             } catch (IOException ex) {
                 exceptionOutput.ThrowException("Ошибка чтения файла.");
             }
@@ -192,20 +197,20 @@ public class Controller implements Initializable {
 
         choosenFile = choosenFileProperty.get();
         if (choosenFile != null) {
-            SaveFile.saveFile(textArea, choosenFile);
+            SaveFile.saveFile(codeArea, choosenFile);
         } else {
-            SaveFile.saveAsFile(textArea);
+            SaveFile.saveAsFile(codeArea);
         }
     }
 
     @FXML
     protected void saveAsFileClick(){
-        SaveFile.saveAsFile(textArea);
+        SaveFile.saveAsFile(codeArea);
     }
 
     @FXML
     protected void exitClick() {
-        if (choosenFile == null || textArea.isEditable()) {
+        if (choosenFile == null || codeArea.isEditable()) {
             Alert alert = new Alert(AlertType.CONFIRMATION);
             alert.setTitle("Подтверждение");
             alert.setHeaderText("Сохранение файла");
@@ -213,7 +218,7 @@ public class Controller implements Initializable {
 
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
-                    SaveFile.saveAsFile(textArea);
+                    SaveFile.saveAsFile(codeArea);
                 } else {
                     Platform.exit();
                 }
@@ -223,25 +228,25 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    protected void undoClick() { textArea.undo(); }
+    protected void undoClick() { codeArea.undo(); }
 
     @FXML
-    protected void cutClick(){ textArea.cut(); }
+    protected void cutClick(){ codeArea.cut(); }
 
     @FXML
-    protected void copyClick(){ textArea.copy(); }
+    protected void copyClick(){ codeArea.copy(); }
 
     @FXML
-    protected  void pasteClick(){ textArea.paste(); }
+    protected  void pasteClick(){ codeArea.paste(); }
 
     @FXML
-    protected void removeClick() { textArea.clear(); }
+    protected void removeClick() { codeArea.clear(); }
 
     @FXML
-    protected void selectAllClick() { textArea.selectAll(); }
+    protected void selectAllClick() { codeArea.selectAll(); }
 
     @FXML
-    protected void aboutClick() throws ExceptionOutput {
+    protected void aboutClick() {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
@@ -272,7 +277,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    protected void userManualClick() throws ExceptionOutput {
+    protected void userManualClick() {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
@@ -306,14 +311,14 @@ public class Controller implements Initializable {
 
     @FXML
     protected  void increaseInputClick() {
-        Font lateFont = textArea.getFont();
-        textArea.setFont(Font.font("Arial", lateFont.getSize() + 2));
+        //Font lateFont = codeArea.getFont();
+        //codeArea.setFont(Font.font("Arial", lateFont.getSize() + 2));
     }
 
     @FXML
     protected  void decreaseInputClick() {
-        Font lateFont = textArea.getFont();
-        textArea.setFont(Font.font("Arial", lateFont.getSize() - 2));
+        //Font lateFont = codeArea.getFont();
+        //codeArea.setFont(Font.font("Arial", lateFont.getSize() - 2));
     }
 
     @FXML
