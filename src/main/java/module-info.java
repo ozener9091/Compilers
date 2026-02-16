@@ -10,6 +10,7 @@ module com.example.compilers_laba {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires java.desktop;
+    requires org.fxmisc.richtext;
 
     opens com.example.compilers_laba1 to javafx.fxml;
     exports com.example.compilers_laba1;

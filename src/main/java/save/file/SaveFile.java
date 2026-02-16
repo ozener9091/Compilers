@@ -1,9 +1,8 @@
 package save.file;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.fxmisc.richtext.CodeArea;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +11,7 @@ import java.nio.file.Files;
 public class SaveFile {
 
     @FXML
-    public static void saveAsFile(TextArea textArea) {
+    public static void saveAsFile(CodeArea codeArea) {
         FileChooser fileChooser = new FileChooser();
 
         fileChooser.getExtensionFilters().addAll(
@@ -23,21 +22,21 @@ public class SaveFile {
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.setInitialFileName("document.txt");
 
-        Window window = textArea.getScene().getWindow();
+        Window window = codeArea.getScene().getWindow();
         File file = fileChooser.showSaveDialog(window);
 
         if (file != null) {
-            saveFile(textArea, file);
+            saveFile(codeArea, file);
         }
     }
 
-    public static void saveFile(TextArea textArea, File file) {
+    public static void saveFile(CodeArea codeArea, File file) {
         try {
-            String content = textArea.getText();
+            String content = codeArea.getText();
             Files.writeString(file.toPath(), content);
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println(ex.getMessage());
         }
     }
 }
