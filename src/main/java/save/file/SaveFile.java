@@ -1,5 +1,6 @@
 package save.file;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.fxmisc.richtext.CodeArea;
@@ -11,7 +12,7 @@ import java.nio.file.Files;
 public class SaveFile {
 
     @FXML
-    public static void saveAsFile(CodeArea codeArea) {
+    public static void saveAsFile(CodeArea codeArea, Label label) {
         FileChooser fileChooser = new FileChooser();
 
         fileChooser.getExtensionFilters().addAll(
@@ -26,14 +27,15 @@ public class SaveFile {
         File file = fileChooser.showSaveDialog(window);
 
         if (file != null) {
-            saveFile(codeArea, file);
+            saveFile(codeArea, file, label);
         }
     }
 
-    public static void saveFile(CodeArea codeArea, File file) {
+    public static void saveFile(CodeArea codeArea, File file, Label statusLabel) {
         try {
             String content = codeArea.getText();
             Files.writeString(file.toPath(), content);
+            statusLabel.setText(file.getAbsolutePath());
 
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
