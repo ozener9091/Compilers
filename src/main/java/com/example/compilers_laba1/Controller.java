@@ -1,9 +1,9 @@
 package com.example.compilers_laba1;
-import drapAndDropFile.DragAndDropService;
-import highlighting.HighlightingService;
+
 import hotkeysService.HotkeysService;
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
@@ -12,22 +12,18 @@ import javafx.scene.control.Menu;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import localization.Localization;
-
-import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.LineNumberFactory;
+import multipleTabsService.FileTab;
+import multipleTabsService.MultipleTabsService;
 import save.file.SaveFile;
 import exceptions.*;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -108,9 +104,10 @@ public class Controller implements Initializable {
     @FXML
     private Label statusLabel;
 
-    //  Поле ввода
+    //  Вкладки
     @FXML
-    private CodeArea codeArea;
+    private TabPane tabPane;
+    private final ObservableList<FileTab> fileTabs = FXCollections.observableArrayList();
 
     //  Меню модулей
     @FXML
@@ -134,24 +131,23 @@ public class Controller implements Initializable {
     @FXML
     private TableColumn<ErrorEntry, String> pageColumn;
 
-    private File choosenFile = null;
-    private ObjectProperty<File> choosenFileProperty;
+
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
-    private double inputCurrentFontSize = 14;
     private double outputCurrentFontSize = 14;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+        if (tabPane.getTabs().isEmpty()) {
+            MultipleTabsService.createNewTab(tabPane, fileTabs, null, statusLabel);
+        }
+
         initWindowStyle();
         addAllToLocalizationList();
         getErrorService();
-        getDragAndDropService();
-        initLineNumber();
         initHotkeys();
-
     }
 
     private void addAllToLocalizationList() {
@@ -208,15 +204,8 @@ public class Controller implements Initializable {
         exceptionOutput = new ExceptionOutput(errorTable);
         ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
     }
-    private void getDragAndDropService(){
-        choosenFileProperty = DragAndDropService.setupDragAndDrop(codeArea);
-    }
-    private void initLineNumber(){
-        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-    }
+
     private void initWindowStyle(){
-        HighlightingService.setupSyntaxHighlighting(codeArea);
-        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
         outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
     private void initHotkeys(){
@@ -227,81 +216,69 @@ public class Controller implements Initializable {
 
     @FXML
     protected void createClick(){
-        choosenFile = null;
-        codeArea.clear();
+        MultipleTabsService.createNewTab(tabPane, fileTabs, null, statusLabel);
     }
 
     @FXML
     protected void loadFileClick() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt")
-        );
-        choosenFile = fileChooser.showOpenDialog(codeArea.getScene().getWindow());
-
-        if (choosenFile != null) {
-            try {
-                String content = Files.readString(choosenFile.toPath());
-                codeArea.replaceText(content);
-                statusLabel.setText(choosenFile.getAbsolutePath());
-            } catch (IOException ex) {
-                exceptionOutput.ThrowException("Ошибка чтения файла.");
-            }
+        fileChooser.setTitle("Открыть файл");
+        File file = fileChooser.showOpenDialog(tabPane.getScene().getWindow());
+        if (file != null) {
+            MultipleTabsService.createNewTab(tabPane, fileTabs, file, statusLabel);
         }
     }
 
     @FXML
     protected void saveFileClick() {
-
-        choosenFile = choosenFileProperty.get();
-        if (choosenFile != null) {
-            SaveFile.saveFile(codeArea, choosenFile, statusLabel);
-        } else {
-            SaveFile.saveAsFile(codeArea, statusLabel);
-        }
+        SaveFile.saveFile(fileTabs, tabPane, statusLabel, null);
     }
 
     @FXML
     protected void saveAsFileClick(){
-        SaveFile.saveAsFile(codeArea,  statusLabel);
+        SaveFile.saveFile(fileTabs, tabPane, statusLabel, null);
     }
 
     @FXML
     protected void exitClick() {
-        if (choosenFile == null || codeArea.isEditable()) {
-            Alert alert = new Alert(AlertType.CONFIRMATION);
-            alert.setTitle("Подтверждение");
-            alert.setHeaderText("Сохранение файла");
-            alert.setContentText("Сохранить файл перед выходом?");
 
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    SaveFile.saveAsFile(codeArea, statusLabel);
-                } else {
-                    Platform.exit();
-                }
-            });
+        for(FileTab fileTab : fileTabs){
+            if (fileTab.isModified()){
+                MultipleTabsService.askSaveBeforeClose(fileTabs, tabPane, fileTab, statusLabel);
+            }
         }
-        else Platform.exit();
+        Platform.exit();
+    }
+
+
+    @FXML
+    protected void undoClick() {
+        MultipleTabsService.getActiveCodeArea(tabPane).undo();
+    }
+    @FXML
+    protected void cutClick(){
+        MultipleTabsService.getActiveCodeArea(tabPane).cut();
     }
 
     @FXML
-    protected void undoClick() { codeArea.undo(); }
+    protected void copyClick(){
+        MultipleTabsService.getActiveCodeArea(tabPane).copy();
+    }
 
     @FXML
-    protected void cutClick(){ codeArea.cut(); }
+    protected  void pasteClick(){
+        MultipleTabsService.getActiveCodeArea(tabPane).paste();
+    }
 
     @FXML
-    protected void copyClick(){ codeArea.copy(); }
+    protected void removeClick() {
+        MultipleTabsService.getActiveCodeArea(tabPane).clear();
+    }
 
     @FXML
-    protected  void pasteClick(){ codeArea.paste(); }
-
-    @FXML
-    protected void removeClick() { codeArea.clear(); }
-
-    @FXML
-    protected void selectAllClick() { codeArea.selectAll(); }
+    protected void selectAllClick() {
+        MultipleTabsService.getActiveCodeArea(tabPane).selectAll();
+    }
 
     @FXML
     protected void aboutClick() {
@@ -369,16 +346,13 @@ public class Controller implements Initializable {
 
     @FXML
     protected void increaseInputClick() {
-        if (inputCurrentFontSize >= 24) return;
-        inputCurrentFontSize += 2;
-        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
+        MultipleTabsService.getActiveFileTab(tabPane, fileTabs).increaseTextSize();
+
     }
 
     @FXML
     protected void decreaseInputClick() {
-        if (inputCurrentFontSize <= 14) return;
-        inputCurrentFontSize -= 2;
-        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
+        MultipleTabsService.getActiveFileTab(tabPane, fileTabs).decreaseTextSize();
     }
 
     @FXML
