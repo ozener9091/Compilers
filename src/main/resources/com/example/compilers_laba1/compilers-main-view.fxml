@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.fxmisc.richtext.CodeArea?>
 
 <VBox xmlns="http://javafx.com/javafx/17.0.12"
       xmlns:fx="http://javafx.com/fxml"
@@ -104,12 +103,16 @@
     <!-- Поле с информацией об открытом файле (путь) -->
     <Label fx:id="statusLabel" VBox.vgrow="ALWAYS" alignment="CENTER"></Label>
 
-    <SplitPane orientation="VERTICAL" dividerPositions="0.3" VBox.vgrow="ALWAYS">
+    <SplitPane orientation="VERTICAL" dividerPositions="0.6" VBox.vgrow="ALWAYS">
         <!-- Поле ввода -->
+
         <AnchorPane VBox.vgrow="ALWAYS">
-            <CodeArea fx:id="codeArea"
-                      AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+            <TabPane fx:id="tabPane"
+                     AnchorPane.topAnchor="0.0"
+                     AnchorPane.bottomAnchor="0.0"
+                     AnchorPane.leftAnchor="0.0"
+                     AnchorPane.rightAnchor="0.0">
+            </TabPane>
             <HBox spacing="5"
                   AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
                 <Button onAction="#increaseInputClick" text="+"
