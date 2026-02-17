@@ -1,18 +1,38 @@
 package save.file;
-import javafx.fxml.FXML;
+
+import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-import org.fxmisc.richtext.CodeArea;
-
+import multipleTabsService.FileTab;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
 public class SaveFile {
 
-    @FXML
-    public static void saveAsFile(CodeArea codeArea, Label label) {
+    public static void saveFile(ObservableList<FileTab> fileTabs, TabPane tabPane, Label statusLabel, FileTab fileTab) {
+
+
+
+        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        if (selectedTab == null) return;
+
+        if(fileTab == null){
+            fileTab = findFileTabByTab(fileTabs, selectedTab);
+        }
+        File file = fileTab.getFile();
+        if (file == null) {
+            saveFileAs(tabPane, fileTab, statusLabel);
+        } else {
+            writeToFile(fileTab, file, statusLabel);
+        }
+    }
+
+    public static void saveFileAs(TabPane tabPane, FileTab fileTab, Label statusLabel) {
+
         FileChooser fileChooser = new FileChooser();
 
         fileChooser.getExtensionFilters().addAll(
@@ -23,22 +43,32 @@ public class SaveFile {
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.setInitialFileName("document.txt");
 
-        Window window = codeArea.getScene().getWindow();
+        Window window = fileTab.getCodeArea().getScene().getWindow();
         File file = fileChooser.showSaveDialog(window);
 
         if (file != null) {
-            saveFile(codeArea, file, label);
+            writeToFile(fileTab, file, statusLabel);
         }
+
     }
 
-    public static void saveFile(CodeArea codeArea, File file, Label statusLabel) {
+    public static void writeToFile(FileTab fileTab, File file, Label statusLabel) {
         try {
-            String content = codeArea.getText();
+            String content = fileTab.getCodeArea().getText();
             Files.writeString(file.toPath(), content);
             statusLabel.setText(file.getAbsolutePath());
+            fileTab.setModified(false);
+            fileTab.getTab().setText(file.getName());
 
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    public static FileTab findFileTabByTab(ObservableList<FileTab> fileTabs, Tab tab) {
+        return fileTabs.stream()
+                .filter(ft -> ft.getTab().equals(tab))
+                .findFirst()
+                .orElse(null);
     }
 }
