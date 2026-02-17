@@ -145,11 +145,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-
         initWindowStyle();
-        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
-        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
-
         addAllToLocalizationList();
         getErrorService();
         getDragAndDropService();
@@ -220,6 +216,8 @@ public class Controller implements Initializable {
     }
     private void initWindowStyle(){
         HighlightingService.setupSyntaxHighlighting(codeArea);
+        codeArea.setStyle("-fx-font-size: " + inputCurrentFontSize + "px;");
+        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
     private void initHotkeys(){
         HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+N"), this::createClick);

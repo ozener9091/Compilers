@@ -127,7 +127,7 @@
                 <Menu fx:id="controlFlowGraphLabel" text="Граф потока управления"/>
             </MenuBar>
 
-            <SplitPane orientation="VERTICAL" dividerPositions="0.5" VBox.vgrow="ALWAYS">
+            <SplitPane orientation="VERTICAL" dividerPositions="0.7" VBox.vgrow="ALWAYS">
                 <!-- Поле вывода -->
                 <AnchorPane VBox.vgrow="ALWAYS">
                     <Label fx:id="outputLabel"
