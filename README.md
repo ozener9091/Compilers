@@ -91,4 +91,4 @@ mvn javafx:run
     ✅ Масштабируемые области с ползунками (SplitPane)
 
 ### Ссылка для скачивания
-Скачать программу (Только GUI): [CompilersLab1-v1.0.zip](https://github.com/ozener9091/Compilers_Laba1/releases/download/v1.0/CompilersLab1-v1.0.zip)
+Скачать программу (Только GUI): [CompilersLab1-v1.0.zip](https://github.com/ozener9091/Compilers_Laba1/releases/download/v1.0/CompilersLaba1.zip)
