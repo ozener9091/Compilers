@@ -21,6 +21,7 @@
                 </Menu>
                 <Menu fx:id="editLabel" text="Правка">
                     <MenuItem fx:id="undoButton" text="Отменить" onAction="#undoClick"/>
+                    <MenuItem fx:id="returnButton" text="Вернуть" onAction="#returnClick"/>
                     <MenuItem fx:id="cutButton" text="Вырезать" onAction="#cutClick"/>
                     <MenuItem fx:id="copyButton" text="Копировать" onAction="#copyClick"/>
                     <MenuItem fx:id="pasteButton" text="Вставить" onAction="#pasteClick"/>
@@ -34,6 +35,9 @@
                 <Menu fx:id="languageLabel" text="Язык">
                     <RadioMenuItem onAction="#englishSelectClick" fx:id="englishSelectButton" text="Английский"/>
                     <RadioMenuItem onAction="#russianSelectClick" fx:id="russianSelectButton" selected="true"  text="Русский"/>
+                </Menu>
+                <Menu text="Пуск">
+                    <MenuItem fx:id="runButton" text="Пуск" onAction="#runClick"/>
                 </Menu>
             </MenuBar>
         </top>
@@ -72,6 +76,14 @@
             </graphic>
             <tooltip>
                 <Tooltip fx:id="undoTooltip" text="Отменить (Ctrl+Z)"/>
+            </tooltip>
+        </Button>
+        <Button onAction="#returnClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+            <graphic>
+                <Label text="↪️" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+            </graphic>
+            <tooltip>
+                <Tooltip fx:id="returnTooltip" text="Вернуть"/>
             </tooltip>
         </Button>
         <Button onAction="#copyClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
@@ -133,12 +145,18 @@
             <SplitPane orientation="VERTICAL" dividerPositions="0.7" VBox.vgrow="ALWAYS">
                 <!-- Поле вывода -->
                 <AnchorPane VBox.vgrow="ALWAYS">
-                    <Label fx:id="outputLabel"
-                           VBox.vgrow="ALWAYS"
-                           AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                        Тут выводится что-то...
-                    </Label>
+                    <VBox spacing="5"
+                          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                        <TableView fx:id="outputTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="codeColumn" text="Условный код"/>
+                                <TableColumn fx:id="tokenTypeColumn" text="Тип"/>
+                                <TableColumn fx:id="tokenColumn" text="Лексема"/>
+                                <TableColumn fx:id="locationColumn" text="Местоположение"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
                     <HBox spacing="5"
                           AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
                         <Button onAction="#increaseOutputClick" text="+"
@@ -157,7 +175,7 @@
                             <columns>
                                 <TableColumn fx:id="typeColumn" text="Тип"/>
                                 <TableColumn fx:id="contentColumn" text="Содержание"/>
-                                <TableColumn fx:id="pageColumn" text="Номер страницы"/>
+                                <TableColumn fx:id="pageColumn" text="Номер строки"/>
                             </columns>
                         </TableView>
                     </VBox>

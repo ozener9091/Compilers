@@ -15,7 +15,7 @@ public class HighlightingService {
         String[] keywords = new String[] {
                 "if", "else", "while", "for", "switch", "case", "break", "continue",
                 "return", "int", "float", "double", "char", "string", "boolean", "void", "class",
-                "private", "protected", "public", "this", "try", "static"
+                "private", "protected", "public", "this", "try", "static", "lambda"
         };
 
         String keywordPattern = "\\b(" + String.join("|", keywords) + ")\\b";

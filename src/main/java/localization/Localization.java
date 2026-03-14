@@ -15,6 +15,7 @@ public class Localization {
             Map.entry("Выход", "Exit"),
             Map.entry("Правка", "Edit"),
             Map.entry("Отменить", "Undo"),
+            Map.entry("Вернуть", "Redo"),
             Map.entry("Вырезать", "Cut"),
             Map.entry("Копировать", "Copy"),
             Map.entry("Вставить", "Paste"),

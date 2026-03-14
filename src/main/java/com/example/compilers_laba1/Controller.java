@@ -1,6 +1,5 @@
 package com.example.compilers_laba1;
 
-import hotkeysService.HotkeysService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,15 +10,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
-import localization.Localization;
-import multipleTabsService.FileTab;
-import multipleTabsService.MultipleTabsService;
-import save.file.SaveFile;
-import exceptions.*;
+import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
-
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
@@ -27,6 +21,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import hotkeysService.*;
+import localization.*;
+import scanner.*;
+import exceptions.*;
+import save.file.*;
+import multipleTabsService.*;
+
 
 enum Locale {
     English, Russian
@@ -58,6 +60,8 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem undoButton;
     @FXML
+    private MenuItem returnButton;
+    @FXML
     private MenuItem cutButton;
     @FXML
     private MenuItem copyButton;
@@ -84,6 +88,10 @@ public class Controller implements Initializable {
     @FXML
     private RadioMenuItem russianSelectButton;
 
+    //  Пуск
+    @FXML
+    public MenuItem runButton;
+
     //  Панель инструментов
     @FXML
     private Tooltip createTooltip;
@@ -93,6 +101,8 @@ public class Controller implements Initializable {
     private Tooltip saveTooltip;
     @FXML
     private Tooltip undoTooltip;
+    @FXML
+    private Tooltip returnTooltip;
     @FXML
     private Tooltip copyTooltip;
     @FXML
@@ -119,7 +129,15 @@ public class Controller implements Initializable {
 
     //  Поле вывода
     @FXML
-    private Label outputLabel;
+    private TableView<OutputEntry> outputTable;
+    @FXML
+    private TableColumn<OutputEntry, String> codeColumn;
+    @FXML
+    private TableColumn<OutputEntry, String> tokenTypeColumn;
+    @FXML
+    private TableColumn<OutputEntry, String> tokenColumn;
+    @FXML
+    private TableColumn<OutputEntry, String> locationColumn;
 
     //  Таблица с ошибками
     @FXML
@@ -136,6 +154,7 @@ public class Controller implements Initializable {
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
     private double outputCurrentFontSize = 14;
+    private Stage stage;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -147,6 +166,7 @@ public class Controller implements Initializable {
         initWindowStyle();
         addAllToLocalizationList();
         getErrorService();
+        getOutputService();
         initHotkeys();
     }
 
@@ -167,6 +187,7 @@ public class Controller implements Initializable {
 
         //  Меню правка
         localizationList.add(undoButton);
+        localizationList.add(returnButton);
         localizationList.add(cutButton);
         localizationList.add(copyButton);
         localizationList.add(pasteButton);
@@ -186,6 +207,7 @@ public class Controller implements Initializable {
         localizationList.add(openTooltip);
         localizationList.add(saveTooltip);
         localizationList.add(undoTooltip);
+        localizationList.add(returnTooltip);
         localizationList.add(copyTooltip);
         localizationList.add(cutTooltip);
         localizationList.add(pasteTooltip);
@@ -205,13 +227,28 @@ public class Controller implements Initializable {
         ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
     }
 
+    private void getOutputService(){
+        OutputTable.initOutputTable(codeColumn, tokenTypeColumn, tokenColumn, locationColumn, outputTable);
+    }
+
     private void initWindowStyle(){
-        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
+        outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
     private void initHotkeys(){
         HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+N"), this::createClick);
         HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+O"), this::loadFileClick);
         HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+S"), this::saveFileClick);
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+        stage.setOnCloseRequest(event -> {
+            for(FileTab fileTab : fileTabs){
+                if (fileTab.isModified()){
+                    MultipleTabsService.askSaveBeforeClose(fileTabs, tabPane, fileTab, statusLabel);
+                }
+            }
+        });
     }
 
     @FXML
@@ -255,6 +292,12 @@ public class Controller implements Initializable {
     protected void undoClick() {
         MultipleTabsService.getActiveCodeArea(tabPane).undo();
     }
+
+    @FXML
+    protected void returnClick(){
+        MultipleTabsService.getActiveCodeArea(tabPane).redo();
+    }
+
     @FXML
     protected void cutClick(){
         MultipleTabsService.getActiveCodeArea(tabPane).cut();
@@ -345,6 +388,45 @@ public class Controller implements Initializable {
     }
 
     @FXML
+    protected void runClick() {
+        // Предполагаем, что у вас есть TextArea для ввода
+        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
+
+        // Очищаем таблицы
+        outputTable.getItems().clear();
+        errorTable.getItems().clear();
+
+        // Получаем списки напрямую из сканера
+        List<Scanner.TokenInfo> tokens = Scanner.getTokenList(inputText);
+        List<Scanner.ErrorInfo> errors = Scanner.getErrorList(inputText);
+
+        // Прямое добавление в таблицы (если OutputEntry и ErrorEntry имеют соответствующие конструкторы)
+        for (Scanner.TokenInfo tokenInfo : tokens) {
+            outputTable.getItems().add(new OutputEntry(
+                    tokenInfo.getCode(),
+                    tokenInfo.getTokenType(),
+                    tokenInfo.getToken(),
+                    tokenInfo.getLocation()
+            ));
+        }
+
+
+
+        for (Scanner.ErrorInfo errorInfo : errors) {
+
+            errorTable.getItems().add(new ErrorEntry(
+                    errorInfo.getType(),
+                    errorInfo.getContent(),
+                    errorInfo.getPage()
+            ));
+        }
+
+        // Обновляем отображение таблиц
+        outputTable.refresh();
+        errorTable.refresh();
+    }
+
+    @FXML
     protected void increaseInputClick() {
         MultipleTabsService.getActiveFileTab(tabPane, fileTabs).increaseTextSize();
 
@@ -359,14 +441,14 @@ public class Controller implements Initializable {
     protected  void increaseOutputClick() {
         if (outputCurrentFontSize >= 24) return;
         outputCurrentFontSize += 2;
-        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
+        outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
 
     @FXML
     protected  void decreaseOutputClick() {
         if (outputCurrentFontSize <= 14) return;
         outputCurrentFontSize -= 2;
-        outputLabel.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
+        outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
 
     @FXML
