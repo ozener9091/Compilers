@@ -249,7 +249,9 @@ mvn javafx:run
 | **Знак конца команды (;)** | 11 |
 
 Пример корректных строк
+
 > a = lambda a, b: a * b;
+
 > mab = lambda sdf, fdg: sdf + (sdf + fdg);
 
 ### 🖥 Конечный автомат
