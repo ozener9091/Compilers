@@ -13,6 +13,25 @@ target/
 *.iml
 *.ipr
 
+# Игнорировать JAR файлы
+*.jar
+
+# Игнорировать папку out (где IntelliJ собирает проект)
+out/
+target/
+build/
+
+# Игнорировать папку с артефактами
+/out/artifacts/
+
+# Другие стандартные исключения
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+bin/
+
 ### Eclipse ###
 .apt_generated
 .classpath
