@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 
 import hotkeysService.*;
 import localization.*;
+import org.fxmisc.richtext.CodeArea;
 import scanner.*;
 import exceptions.*;
 import save.file.*;
@@ -153,6 +154,7 @@ public class Controller implements Initializable {
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
+    private List<Scanner.ErrorInfo> currentErrors = new ArrayList<>();
     private double outputCurrentFontSize = 14;
     private Stage stage;
 
@@ -168,6 +170,7 @@ public class Controller implements Initializable {
         getErrorService();
         getOutputService();
         initHotkeys();
+        initErrorNavigation();
     }
 
     private void addAllToLocalizationList() {
@@ -222,6 +225,7 @@ public class Controller implements Initializable {
         localizationList.add(contentColumn);
         localizationList.add(pageColumn);
     }
+
     private void getErrorService(){
         exceptionOutput = new ExceptionOutput(errorTable);
         ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
@@ -234,6 +238,7 @@ public class Controller implements Initializable {
     private void initWindowStyle(){
         outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
+
     private void initHotkeys(){
         HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+N"), this::createClick);
         HotkeysService.addHotkey(mainWindow, KeyCombination.valueOf("Ctrl+O"), this::loadFileClick);
@@ -249,6 +254,139 @@ public class Controller implements Initializable {
                 }
             }
         });
+    }
+
+    private void initErrorNavigation() {
+        errorTable.setRowFactory(tv -> {
+            TableRow<ErrorEntry> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 1 && !row.isEmpty()) {
+                    ErrorEntry errorEntry = row.getItem();
+                    navigateToError(errorEntry);
+                }
+            });
+            return row;
+        });
+
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem goToErrorItem = new MenuItem("Перейти к ошибке");
+        goToErrorItem.setOnAction(event -> {
+            ErrorEntry selectedError = errorTable.getSelectionModel().getSelectedItem();
+            if (selectedError != null) {
+                navigateToError(selectedError);
+            }
+        });
+        contextMenu.getItems().add(goToErrorItem);
+        errorTable.setContextMenu(contextMenu);
+
+        errorTable.setRowFactory(tv -> {
+            TableRow<ErrorEntry> row = new TableRow<>();
+            row.hoverProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal && !row.isEmpty()) {
+                    row.setStyle("-fx-background-color: #ffcccc;");
+                } else if (!row.isEmpty()) {
+                    row.setStyle("");
+                }
+            });
+
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 1 && !row.isEmpty()) {
+                    ErrorEntry errorEntry = row.getItem();
+                    navigateToError(errorEntry);
+                }
+            });
+
+            return row;
+        });
+    }
+
+    private void navigateToError(ErrorEntry errorEntry) {
+        if (errorEntry == null || errorEntry.getPage() == null) return;
+
+        try {
+            String page = errorEntry.getPage();
+            if (page == null || page.isEmpty()) return;
+
+            String[] position = page.split(":");
+            if (position.length < 2) return;
+
+            int line = Integer.parseInt(position[0]);
+            int column = Integer.parseInt(position[1]);
+
+            CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
+            if (activeCodeArea == null) return;
+
+            int caretPosition = getPositionFromLineAndColumn(activeCodeArea.getText(), line, column);
+
+            activeCodeArea.moveTo(caretPosition);
+            activeCodeArea.requestFocus();
+
+            highlightErrorToken(activeCodeArea, errorEntry.getContent(), caretPosition);
+
+            statusLabel.setText("Переход к ошибке: " + errorEntry.getContent());
+
+        } catch (NumberFormatException e) {
+            exceptionOutput.ThrowException("Ошибка при парсинге позиции ошибки");
+        }
+    }
+
+    private int getPositionFromLineAndColumn(String text, int line, int column) {
+        String[] lines = text.split("\n", -1);
+
+        int position = 0;
+        for (int i = 0; i < Math.min(line - 1, lines.length); i++) {
+            position += lines[i].length() + 1; // +1 для символа новой строки
+        }
+
+        if (line - 1 < lines.length) {
+            position += Math.min(column - 1, lines[line - 1].length());
+        }
+
+        return Math.min(position, text.length());
+    }
+
+    private void highlightErrorToken(CodeArea codeArea, String errorContent, int caretPosition) {
+        String token = extractTokenFromError(errorContent);
+        if (token != null && !token.isEmpty()) {
+            codeArea.selectRange(caretPosition, caretPosition + token.length());
+        } else {
+            codeArea.selectRange(caretPosition, caretPosition);
+        }
+    }
+
+    private String extractTokenFromError(String errorContent) {
+        if (errorContent == null) return null;
+
+        int startQuote = errorContent.indexOf('\'');
+        int endQuote = errorContent.lastIndexOf('\'');
+
+        if (startQuote != -1 && endQuote != -1 && startQuote < endQuote) {
+            return errorContent.substring(startQuote + 1, endQuote);
+        }
+
+        return null;
+    }
+
+    private void highlightAllErrors(CodeArea codeArea, List<Scanner.ErrorInfo> errors) {
+        codeArea.setStyleSpans(0, codeArea.getStyleSpans(0, codeArea.getLength()));
+
+        for (Scanner.ErrorInfo error : errors) {
+            try {
+                String[] position = error.getPage().split(":");
+                if (position.length < 2) continue;
+
+                int line = Integer.parseInt(position[0]);
+                int column = Integer.parseInt(position[1]);
+
+                int startPos = getPositionFromLineAndColumn(codeArea.getText(), line, column);
+                String token = extractTokenFromError(error.getContent());
+
+                if (token != null && !token.isEmpty()) {
+                    int endPos = startPos + token.length();
+                }
+            } catch (Exception e) {
+            }
+        }
     }
 
     @FXML
@@ -389,18 +527,14 @@ public class Controller implements Initializable {
 
     @FXML
     protected void runClick() {
-        // Предполагаем, что у вас есть TextArea для ввода
         String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
 
-        // Очищаем таблицы
         outputTable.getItems().clear();
         errorTable.getItems().clear();
 
-        // Получаем списки напрямую из сканера
         List<Scanner.TokenInfo> tokens = Scanner.getTokenList(inputText);
         List<Scanner.ErrorInfo> errors = Scanner.getErrorList(inputText);
 
-        // Прямое добавление в таблицы (если OutputEntry и ErrorEntry имеют соответствующие конструкторы)
         for (Scanner.TokenInfo tokenInfo : tokens) {
             outputTable.getItems().add(new OutputEntry(
                     tokenInfo.getCode(),
@@ -409,8 +543,6 @@ public class Controller implements Initializable {
                     tokenInfo.getLocation()
             ));
         }
-
-
 
         for (Scanner.ErrorInfo errorInfo : errors) {
 
@@ -421,9 +553,20 @@ public class Controller implements Initializable {
             ));
         }
 
-        // Обновляем отображение таблиц
         outputTable.refresh();
         errorTable.refresh();
+
+        if (errors.isEmpty()) {
+            statusLabel.setText("Ошибок не найдено");
+        } else {
+            statusLabel.setText("Найдено ошибок: " + errors.size() + ". Двойной клик для перехода к ошибке");
+        }
+
+        CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
+        if (activeCodeArea != null && !errors.isEmpty()) {
+            highlightAllErrors(activeCodeArea, errors);
+        }
+
     }
 
     @FXML
