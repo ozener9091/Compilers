@@ -92,6 +92,8 @@ public class Controller implements Initializable {
     //  Пуск
     @FXML
     public MenuItem runButton;
+    @FXML
+    private MenuItem runFlexBisonButton;
 
     //  Панель инструментов
     @FXML
@@ -567,6 +569,50 @@ public class Controller implements Initializable {
             highlightAllErrors(activeCodeArea, errors);
         }
 
+    }
+
+    @FXML
+    protected void runFlexBisonClick() {
+        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
+
+        outputTable.getItems().clear();
+        errorTable.getItems().clear();
+
+        try {
+            FlexBisonAdapter.Result result = FlexBisonAdapter.parse(inputText);
+
+            for (Scanner.TokenInfo tokenInfo : result.getTokens()) {
+                outputTable.getItems().add(new OutputEntry(
+                        tokenInfo.getCode(),
+                        tokenInfo.getTokenType(),
+                        tokenInfo.getToken(),
+                        tokenInfo.getLocation()
+                ));
+            }
+
+            for (Scanner.ErrorInfo errorInfo : result.getErrors()) {
+                errorTable.getItems().add(new ErrorEntry(
+                        errorInfo.getType(),
+                        errorInfo.getContent(),
+                        errorInfo.getPage()
+                ));
+            }
+
+            outputTable.refresh();
+            errorTable.refresh();
+
+            statusLabel.setText("Flex/Bison анализ завершён. Токенов: " + result.getTokens().size() + ", ошибок: " + result.getErrors().size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            statusLabel.setText("Ошибка при запуске внешнего анализатора: " + e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Ошибка");
+            alert.setHeaderText("Не удалось запустить внешний анализатор");
+            alert.setContentText("Убедитесь, что файл parser.exe находится в папке приложения.\n" +
+                    "Текущая рабочая директория: " + System.getProperty("user.dir"));
+            alert.showAndWait();
+        }
     }
 
     @FXML
