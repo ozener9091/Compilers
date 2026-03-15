@@ -579,7 +579,7 @@ public class Controller implements Initializable {
         errorTable.getItems().clear();
 
         try {
-            FlexBisonAdapter.Result result = FlexBisonAdapter.parse(inputText);
+            FlexAdapter.Result result = FlexAdapter.parse(inputText);
 
             for (Scanner.TokenInfo tokenInfo : result.getTokens()) {
                 outputTable.getItems().add(new OutputEntry(

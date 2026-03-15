@@ -5,9 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlexBisonAdapter {
+public class FlexAdapter {
 
-    private static final String PARSER_EXE_PATH = ".\\flexbison\\parser.exe"; // путь к исполняемому файлу
+    private static final String PARSER_EXE_PATH = ".\\flexbison\\lexer.exe"; // путь к исполняемому файлу
 
     public static Result parse(String input) throws IOException, InterruptedException {
         List<Scanner.TokenInfo> tokens = new ArrayList<>();

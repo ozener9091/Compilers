@@ -394,13 +394,25 @@ char *yytext;
 #line 1 "lexer.l"
 #define INITIAL 0
 #line 2 "lexer.l"
-#include "parser.tab.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define ID          1
+#define LAMBDA      2
+#define ASSIGN      3
+#define COMMA       4
+#define COLON       5
+#define PLUS        6
+#define LPAREN      7
+#define RPAREN      8
+#define MULT        9
+#define SPACE       10
+#define SEMICOLON   11
+
 int yycol = 1;
 #define YY_USER_ACTION { yycol += yyleng; }
-#line 404 "lex.yy.c"
+#line 416 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -551,9 +563,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 13 "lexer.l"
+#line 25 "lexer.l"
 
-#line 557 "lex.yy.c"
+#line 569 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -646,75 +658,75 @@ do_action:	/* This label is used only to access EOF actions. */
 	{ /* beginning of action switch */
 case 1:
 YY_RULE_SETUP
-#line 14 "lexer.l"
-{ printf("TOKEN|2|lambda|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return LAMBDA; }
+#line 26 "lexer.l"
+{ printf("TOKEN|%d|lambda|%s|%d:%d\n", LAMBDA, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 15 "lexer.l"
-{ printf("TOKEN|1|идентификатор|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); yylval = strdup(yytext); return ID; }
+#line 27 "lexer.l"
+{ printf("TOKEN|%d|идентификатор|%s|%d:%d\n", ID, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 16 "lexer.l"
-{ printf("TOKEN|3|знак равенства|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return ASSIGN; }
+#line 28 "lexer.l"
+{ printf("TOKEN|%d|знак равенства|%s|%d:%d\n", ASSIGN, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 17 "lexer.l"
-{ printf("TOKEN|4|запятая|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return COMMA; }
+#line 29 "lexer.l"
+{ printf("TOKEN|%d|запятая|%s|%d:%d\n", COMMA, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 18 "lexer.l"
-{ printf("TOKEN|5|двоеточие|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return COLON; }
+#line 30 "lexer.l"
+{ printf("TOKEN|%d|двоеточие|%s|%d:%d\n", COLON, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 19 "lexer.l"
-{ printf("TOKEN|6|знак сложения|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return PLUS; }
+#line 31 "lexer.l"
+{ printf("TOKEN|%d|знак сложения|%s|%d:%d\n", PLUS, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 20 "lexer.l"
-{ printf("TOKEN|7|открывающая скобка|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return LPAREN; }
+#line 32 "lexer.l"
+{ printf("TOKEN|%d|открывающая скобка|%s|%d:%d\n", LPAREN, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 21 "lexer.l"
-{ printf("TOKEN|8|закрывающая скобка|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return RPAREN; }
+#line 33 "lexer.l"
+{ printf("TOKEN|%d|закрывающая скобка|%s|%d:%d\n", RPAREN, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 22 "lexer.l"
-{ printf("TOKEN|9|знак умножения|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return MULT; }
+#line 34 "lexer.l"
+{ printf("TOKEN|%d|знак умножения|%s|%d:%d\n", MULT, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 23 "lexer.l"
-{ printf("TOKEN|10|пробел| |%d:%d\n", yylineno, yycol - yyleng); /* не возвращаем токен */ }
+#line 35 "lexer.l"
+{ printf("TOKEN|%d|пробел| |%d:%d\n", SPACE, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 24 "lexer.l"
-{ printf("TOKEN|11|точка с запятой|%s|%d:%d\n", yytext, yylineno, yycol - yyleng); return SEMICOLON; }
+#line 36 "lexer.l"
+{ printf("TOKEN|%d|точка с запятой|%s|%d:%d\n", SEMICOLON, yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 25 "lexer.l"
+#line 37 "lexer.l"
 { yycol = 1; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 26 "lexer.l"
+#line 38 "lexer.l"
 { printf("ERROR|Лексическая ошибка|Недопустимый символ '%s'|%d:%d\n", yytext, yylineno, yycol - yyleng); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 27 "lexer.l"
+#line 39 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 718 "lex.yy.c"
+#line 730 "lex.yy.c"
 			case YY_STATE_EOF(INITIAL):
 				yyterminate();
 
@@ -1598,4 +1610,12 @@ int main()
 	return 0;
 	}
 #endif
-#line 27 "lexer.l"
+#line 39 "lexer.l"
+
+
+int main() {
+    printf("Запуск лексера\n");
+    printf("Введите текст для анализа:\n");
+    yylex();
+    return 0;
+}
