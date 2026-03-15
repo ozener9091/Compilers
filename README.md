@@ -279,89 +279,25 @@ mvn javafx:run
 
 ### Дополнительное задание (Flex&Bison)
 
-Правила грамматики
->Терминалы:
->ид – идентификатор (буква, за которой могут следовать буквы, цифры или подчёркивания)
->lambda, =, ;, ,, :, +, *, (, )
->
->Правила вывода:
->
-><программа> → <оператор> { <оператор> }
->Программа – последовательность из одного или нескольких операторов.
->
-><оператор> → ид = <выражение> ;
->Оператор присваивания.
->
-><выражение> → <лямбда> | <слагаемое>
->Выражение может быть лямбда-абстракцией или арифметическим выражением.
->
-><лямбда> → lambda <список_параметров> : <выражение>
->Лямбда-абстракция.
->
-><список_параметров> → ид { , ид }
->Список параметров – один или несколько идентификаторов, разделённых запятыми.
->
-><слагаемое> → <множитель> { + <множитель> }
->Левоассоциативное сложение (ноль или более повторений).
->
-><множитель> → <первичное> { * <первичное> }
->Левоассоциативное умножение (ноль или более повторений).
->
-><первичное> → ид | ( <выражение> )
->Первичные выражения – идентификатор или выражение в скобках.
+Т.к. требуется сделать только лексический анализатор, будем использовать только flex
 
-
-Грамматика для Flex&Bison
->%token ID LAMBDA ASSIGN COMMA COLON PLUS LPAREN RPAREN MULT SEMICOLON
->
->%start program
->
->%%
->
->program
->   : statement
->  | program statement
-> ;
->
->statement
->    : ID ASSIGN expression SEMICOLON
->    ;
->
->expression
->    : lambda_expr
->    | additive_expr
->    ;
->
->lambda_expr
->    : LAMBDA id_list COLON expression
->    ;
->
->id_list
->    : ID
->    | id_list COMMA ID
->    ;
->
->additive_expr
->    : multiplicative_expr
->    | additive_expr PLUS multiplicative_expr
->    ;
->
->multiplicative_expr
->    : primary
->    | multiplicative_expr MULT primary
->    ;
->
->primary
->    : ID
->    | LPAREN expression RPAREN
->    ;
->
->%%
+Определение токенов для flex
+>#define ID          1
+>#define LAMBDA      2
+>#define ASSIGN      3
+>#define COMMA       4
+>#define COLON       5
+>#define PLUS        6
+>#define LPAREN      7
+>#define RPAREN      8
+>#define MULT        9
+>#define SPACE       10
+>#define SEMICOLON   11
 
 
 Пример работы (консоль)
 
-![Тест flex1](img/flex1.png)
+![Тест flex1](img/flex1.jpg)
 
 
 Пример работы (приложение)
