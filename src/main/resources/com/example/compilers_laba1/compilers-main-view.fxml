@@ -174,9 +174,9 @@
                           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                         <TableView fx:id="errorTable" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="typeColumn" text="Тип"/>
-                                <TableColumn fx:id="contentColumn" text="Содержание"/>
-                                <TableColumn fx:id="pageColumn" text="Номер строки"/>
+                                <TableColumn fx:id="typeColumn" text="Неверный фрагмент"/>
+                                <TableColumn fx:id="pageColumn" text="Местоположение"/>
+                                <TableColumn fx:id="contentColumn" text="Описание"/>
                             </columns>
                         </TableView>
                     </VBox>

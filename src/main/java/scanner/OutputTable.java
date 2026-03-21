@@ -25,10 +25,10 @@ public class OutputTable {
         locationColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getLocation()));
 
-        codeColumn.prefWidthProperty().bind(outputTable.widthProperty().divide(3));
-        typeColumn.prefWidthProperty().bind(outputTable.widthProperty().divide(3));
-        tokenColumn.prefWidthProperty().bind(outputTable.widthProperty().divide(3));
-        locationColumn.prefWidthProperty().bind(outputTable.widthProperty().divide(3));
+        codeColumn.prefWidthProperty().bind(outputTable.widthProperty().multiply(0.15));
+        typeColumn.prefWidthProperty().bind(outputTable.widthProperty().multiply(0.4));
+        tokenColumn.prefWidthProperty().bind(outputTable.widthProperty().multiply(0.25));
+        locationColumn.prefWidthProperty().bind(outputTable.widthProperty().multiply(0.2));
 
     }
 }

@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import hotkeysService.*;
 import localization.*;
 import org.fxmisc.richtext.CodeArea;
+import parser.LambdaParser;
 import scanner.*;
 import exceptions.*;
 import save.file.*;
@@ -156,7 +157,8 @@ public class Controller implements Initializable {
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
-    private List<Scanner.ErrorInfo> currentErrors = new ArrayList<>();
+    private List<ErrorEntry> currentErrors = new ArrayList<>();
+    private List<Scanner.ErrorInfo> lexicalErrors = new ArrayList<>();
     private double outputCurrentFontSize = 14;
     private Stage stage;
 
@@ -259,17 +261,6 @@ public class Controller implements Initializable {
     }
 
     private void initErrorNavigation() {
-        errorTable.setRowFactory(tv -> {
-            TableRow<ErrorEntry> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 1 && !row.isEmpty()) {
-                    ErrorEntry errorEntry = row.getItem();
-                    navigateToError(errorEntry);
-                }
-            });
-            return row;
-        });
-
         ContextMenu contextMenu = new ContextMenu();
         MenuItem goToErrorItem = new MenuItem("Перейти к ошибке");
         goToErrorItem.setOnAction(event -> {
@@ -516,9 +507,9 @@ public class Controller implements Initializable {
                         "-fx-cursor: hand;"
         );
 
-        linkLabel.setOnMouseClicked(_ -> {
+        linkLabel.setOnMouseClicked(event -> {
             try {
-                Desktop.getDesktop().browse(new URI("htasdtps://github.com/ozener9091/Compilers_Laba1"));
+                Desktop.getDesktop().browse(new URI("https://github.com/ozener9091/Compilers_Laba1"));
             } catch (Exception ex) {
                 exceptionOutput.ThrowException("Ошибка открытия ссылки.");
             }
@@ -533,9 +524,11 @@ public class Controller implements Initializable {
 
         outputTable.getItems().clear();
         errorTable.getItems().clear();
+        currentErrors.clear();
 
-        List<Scanner.TokenInfo> tokens = Scanner.getTokenList(inputText);
-        List<Scanner.ErrorInfo> errors = Scanner.getErrorList(inputText);
+        Scanner.LexicalResult lexicalResult = Scanner.analyze(inputText);
+        List<Scanner.TokenInfo> tokens = lexicalResult.getTokens();
+        lexicalErrors = lexicalResult.getErrors();
 
         for (Scanner.TokenInfo tokenInfo : tokens) {
             outputTable.getItems().add(new OutputEntry(
@@ -546,27 +539,46 @@ public class Controller implements Initializable {
             ));
         }
 
-        for (Scanner.ErrorInfo errorInfo : errors) {
-
-            errorTable.getItems().add(new ErrorEntry(
-                    errorInfo.getType(),
-                    errorInfo.getContent(),
-                    errorInfo.getPage()
+        for (Scanner.ErrorInfo errorInfo : lexicalErrors) {
+            currentErrors.add(new ErrorEntry(
+                    errorInfo.getFragment(),
+                    errorInfo.getDescription(),
+                    errorInfo.getLocation(),
+                    errorInfo.getLine(),
+                    errorInfo.getColumn(),
+                    errorInfo.getHighlightLength()
             ));
         }
 
+        if (lexicalErrors.isEmpty()) {
+            LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
+            for (Scanner.ErrorInfo errorInfo : parseResult.getErrors()) {
+                currentErrors.add(new ErrorEntry(
+                        errorInfo.getFragment(),
+                        errorInfo.getDescription(),
+                        errorInfo.getLocation(),
+                        errorInfo.getLine(),
+                        errorInfo.getColumn(),
+                        errorInfo.getHighlightLength()
+                ));
+            }
+        }
+
+        errorTable.getItems().setAll(currentErrors);
         outputTable.refresh();
         errorTable.refresh();
 
-        if (errors.isEmpty()) {
-            statusLabel.setText("Ошибок не найдено");
+        if (currentErrors.isEmpty()) {
+            statusLabel.setText("Синтаксический анализ завершен. Ошибок не найдено.");
         } else {
-            statusLabel.setText("Найдено ошибок: " + errors.size() + ". Двойной клик для перехода к ошибке");
+            statusLabel.setText(!lexicalErrors.isEmpty()
+                    ? "Найдено ошибок: " + currentErrors.size() + ". Сначала исправьте лексические ошибки."
+                    : "Найдено ошибок: " + currentErrors.size() + ". Выберите строку в таблице для перехода.");
         }
 
         CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
-        if (activeCodeArea != null && !errors.isEmpty()) {
-            highlightAllErrors(activeCodeArea, errors);
+        if (activeCodeArea != null && !currentErrors.isEmpty()) {
+            navigateToError(currentErrors.getFirst());
         }
 
     }
@@ -577,6 +589,7 @@ public class Controller implements Initializable {
 
         outputTable.getItems().clear();
         errorTable.getItems().clear();
+        currentErrors.clear();
 
         try {
             FlexAdapter.Result result = FlexAdapter.parse(inputText);
@@ -591,17 +604,21 @@ public class Controller implements Initializable {
             }
 
             for (Scanner.ErrorInfo errorInfo : result.getErrors()) {
-                errorTable.getItems().add(new ErrorEntry(
-                        errorInfo.getType(),
-                        errorInfo.getContent(),
-                        errorInfo.getPage()
+                currentErrors.add(new ErrorEntry(
+                        errorInfo.getFragment(),
+                        errorInfo.getDescription(),
+                        errorInfo.getLocation(),
+                        errorInfo.getLine(),
+                        errorInfo.getColumn(),
+                        errorInfo.getHighlightLength()
                 ));
             }
 
+            errorTable.getItems().setAll(currentErrors);
             outputTable.refresh();
             errorTable.refresh();
 
-            statusLabel.setText("Flex/Bison анализ завершён. Токенов: " + result.getTokens().size() + ", ошибок: " + result.getErrors().size());
+            statusLabel.setText("Flex/Bison анализ завершен. Токенов: " + result.getTokens().size() + ", ошибок: " + currentErrors.size());
 
         } catch (Exception e) {
             e.printStackTrace();

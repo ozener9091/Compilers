@@ -1,8 +1,16 @@
 package localization;
 
-import javafx.scene.control.*;
-import java.util.*;
 import exceptions.ExceptionOutput;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Localization {
 
@@ -37,9 +45,9 @@ public class Localization {
             Map.entry("Анализатор", "Analyzer"),
             Map.entry("Псевдокод", "Pseudocode"),
             Map.entry("Граф потока управления", "Control Flow Graph"),
-            Map.entry("Тип", "Type"),
-            Map.entry("Содержание", "Content"),
-            Map.entry("Номер страницы", "Page number")
+            Map.entry("Неверный фрагмент", "Invalid fragment"),
+            Map.entry("Местоположение", "Location"),
+            Map.entry("Описание", "Description")
     );
 
     private static final Map<String, String> englishToRussianMap = new HashMap<>();
@@ -53,87 +61,69 @@ public class Localization {
     }
 
     public static void setLocalization(Object object, String language, ExceptionOutput exceptionOutput) {
-        if (object == null) return;
+        if (object == null) {
+            return;
+        }
 
         switch (language) {
-            case "English":
-                setEnglish(object, exceptionOutput);
-                break;
-            case "Russian":
-                setRussian(object, exceptionOutput);
-                break;
-            default:
-                if (exceptionOutput != null) {
-                    exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый язык для локализации.");
-            }
-        }
-    }
-
-    private static void setEnglish(Object object, ExceptionOutput exceptionOutput) {
-        switch (object) {
-            case Menu menu -> {
-                String englishText = russianToEnglishMap.get(menu.getText());
-                if (englishText != null) menu.setText(englishText);
-            }
-            case MenuItem menuItem -> {
-                String englishText = russianToEnglishMap.get(menuItem.getText());
-                if (englishText != null) menuItem.setText(englishText);
-            }
-            case Tooltip tooltip -> {
-                String englishText = russianToEnglishMap.get(tooltip.getText());
-                if (englishText != null) tooltip.setText(englishText);
-            }
-            case Label label -> {
-                String englishText = russianToEnglishMap.get(label.getText());
-                if (englishText != null) label.setText(englishText);
-            }
-            case Button button -> {
-                String englishText = russianToEnglishMap.get(button.getText());
-                if (englishText != null) button.setText(englishText);
-            }
-            case TextArea textArea -> {
-                String englishText = russianToEnglishMap.get(textArea.getPromptText());
-                if (englishText != null) textArea.setPromptText(englishText);
-            }
-            case TableColumn<?, ?> tableColumn -> {
-                String englishText = russianToEnglishMap.get(tableColumn.getText());
-                if (englishText != null) tableColumn.setText(englishText);
-            }
+            case "English" -> setEnglish(object, exceptionOutput);
+            case "Russian" -> setRussian(object, exceptionOutput);
             default -> {
-                if (exceptionOutput != null){
-                    exceptionOutput.ThrowException("Ошибка локализации. Неподдерживамый класс для локализации");
+                if (exceptionOutput != null) {
+                    exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый язык.");
                 }
             }
         }
     }
 
+    private static void setEnglish(Object object, ExceptionOutput exceptionOutput) {
+        String translatedText = getTranslatedText(object, russianToEnglishMap);
+        if (translatedText != null) {
+            applyTranslatedText(object, translatedText);
+            return;
+        }
+
+        if (exceptionOutput != null) {
+            exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый класс для локализации.");
+        }
+    }
+
     private static void setRussian(Object object, ExceptionOutput exceptionOutput) {
+        String translatedText = getTranslatedText(object, englishToRussianMap);
+        if (translatedText != null) {
+            applyTranslatedText(object, translatedText);
+            return;
+        }
+
+        if (exceptionOutput != null) {
+            exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый класс для локализации.");
+        }
+    }
+
+    private static String getTranslatedText(Object object, Map<String, String> dictionary) {
+        return switch (object) {
+            case Menu menu -> dictionary.get(menu.getText());
+            case MenuItem menuItem -> dictionary.get(menuItem.getText());
+            case Tooltip tooltip -> dictionary.get(tooltip.getText());
+            case Label label -> dictionary.get(label.getText());
+            case Button button -> dictionary.get(button.getText());
+            case TextArea textArea -> dictionary.get(textArea.getPromptText());
+            case TableColumn<?, ?> tableColumn -> dictionary.get(tableColumn.getText());
+            default -> null;
+        };
+    }
+
+    private static void applyTranslatedText(Object object, String translatedText) {
         switch (object) {
-            case Menu menu -> {
-                String russianText = englishToRussianMap.get(menu.getText());
-                if (russianText != null) menu.setText(russianText);
+            case Menu menu -> menu.setText(translatedText);
+            case MenuItem menuItem -> menuItem.setText(translatedText);
+            case Tooltip tooltip -> tooltip.setText(translatedText);
+            case Label label -> label.setText(translatedText);
+            case Button button -> button.setText(translatedText);
+            case TextArea textArea -> textArea.setPromptText(translatedText);
+            case TableColumn<?, ?> tableColumn -> tableColumn.setText(translatedText);
+            default -> {
             }
-            case MenuItem menuItem -> {
-                String russianText = englishToRussianMap.get(menuItem.getText());
-                if (russianText != null) menuItem.setText(russianText);
-            }
-            case Tooltip tooltip -> {
-                String russianText = englishToRussianMap.get(tooltip.getText());
-                if (russianText != null) tooltip.setText(russianText);
-            }
-            case Label label -> {
-                String russianText = englishToRussianMap.get(label.getText());
-                if (russianText != null) label.setText(russianText);
-            }
-            case Button button -> {
-                String russianText = englishToRussianMap.get(button.getText());
-                if (russianText != null) button.setText(russianText);
-            }
-            case TextArea textArea -> {
-                String russianPrompt = englishToRussianMap.get(textArea.getPromptText());
-                if (russianPrompt != null) textArea.setPromptText(russianPrompt);
-            }
-            default -> exceptionOutput.ThrowException("Ошибка локализации. Неподдерживаемый класс для локализации.");
         }
     }
 }
