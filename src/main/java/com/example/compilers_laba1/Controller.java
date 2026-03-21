@@ -92,9 +92,11 @@ public class Controller implements Initializable {
 
     //  Пуск
     @FXML
-    public MenuItem runButton;
+    private MenuItem runButton;
     @FXML
     private MenuItem runFlexBisonButton;
+    @FXML
+    private MenuItem runAntlrButton;
 
     //  Панель инструментов
     @FXML
@@ -223,6 +225,11 @@ public class Controller implements Initializable {
         localizationList.add(analyzerLabel);
         localizationList.add(pseudoCodeLabel);
         localizationList.add(controlFlowGraphLabel);
+
+        //  Меню Пуск
+        localizationList.add(runButton);
+        localizationList.add(runFlexBisonButton);
+        localizationList.add(runAntlrButton);
 
         //  Таблица с ошибками
         localizationList.add(typeColumn);
@@ -628,6 +635,62 @@ public class Controller implements Initializable {
             alert.setHeaderText("Не удалось запустить внешний анализатор");
             alert.setContentText("Убедитесь, что файл parser.exe находится в папке приложения.\n" +
                     "Текущая рабочая директория: " + System.getProperty("user.dir"));
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    protected void runAntlrClick() {
+        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
+
+        outputTable.getItems().clear();
+        errorTable.getItems().clear();
+        currentErrors.clear();
+
+        try {
+            AntlrAdapter.AntlrResult result = AntlrAdapter.analyze(inputText);
+
+            for (Scanner.TokenInfo tokenInfo : result.getTokens()) {
+                outputTable.getItems().add(new OutputEntry(
+                        tokenInfo.getCode(),
+                        tokenInfo.getTokenType(),
+                        tokenInfo.getToken(),
+                        tokenInfo.getLocation()
+                ));
+            }
+
+            for (Scanner.ErrorInfo errorInfo : result.getAllErrors()) {
+                currentErrors.add(new ErrorEntry(
+                        errorInfo.getFragment(),
+                        errorInfo.getDescription(),
+                        errorInfo.getLocation(),
+                        errorInfo.getLine(),
+                        errorInfo.getColumn(),
+                        errorInfo.getHighlightLength()
+                ));
+            }
+
+            errorTable.getItems().setAll(currentErrors);
+            outputTable.refresh();
+            errorTable.refresh();
+
+            if (currentErrors.isEmpty()) {
+                statusLabel.setText("ANTLR анализ завершен. Токенов: " + result.getTokens().size() + ", ошибок не найдено.");
+            } else {
+                statusLabel.setText("ANTLR анализ завершен. Токенов: " + result.getTokens().size() + ", ошибок: " + currentErrors.size());
+            }
+
+            if (!currentErrors.isEmpty()) {
+                navigateToError(currentErrors.getFirst());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            statusLabel.setText("Ошибка при запуске ANTLR анализатора: " + e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Ошибка");
+            alert.setHeaderText("Не удалось запустить ANTLR анализатор");
+            alert.setContentText("Произошла ошибка при выполнении анализа: " + e.getMessage());
             alert.showAndWait();
         }
     }

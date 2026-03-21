@@ -9,7 +9,9 @@ import java.util.List;
 public class LambdaParser {
 
     public static final String RECURSIVE_DESCENT_GRAMMAR = """
-            Z -> <identifier> '=' <lambda-expression> ';'
+            <program> -> <statement> <program-tail>
+            <program-tail> -> <statement> <program-tail> | e
+            <statement> -> <identifier> '=' <lambda-expression> ';'
             <identifier> -> letter <identifier-tail>
             <identifier-tail> -> letter | digit | '_' <identifier-tail> | e
             <lambda-expression> -> 'lambda' <parameters> ':' <expression>
@@ -41,8 +43,7 @@ public class LambdaParser {
 
     public static ParseResult parse(List<Scanner.Lexeme> lexemes) {
         ParserState parser = new ParserState(lexemes);
-        parser.parseStatement();
-        parser.reportTrailingTokens();
+        parser.parseProgram();
         return new ParseResult(parser.errors);
     }
 
@@ -69,6 +70,20 @@ public class LambdaParser {
 
         private ParserState(List<Scanner.Lexeme> lexemes) {
             this.lexemes = lexemes == null ? List.of() : lexemes;
+        }
+
+        private void parseProgram() {
+            if (isAtEnd()) {
+                return;
+            }
+            
+            parseStatement();
+            
+            while (!isAtEnd() && current().getKind() == Scanner.TokenKind.IDENTIFIER) {
+                parseStatement();
+            }
+            
+            reportTrailingTokens();
         }
 
         private void parseStatement() {

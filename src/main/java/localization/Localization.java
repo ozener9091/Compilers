@@ -47,7 +47,10 @@ public class Localization {
             Map.entry("Граф потока управления", "Control Flow Graph"),
             Map.entry("Неверный фрагмент", "Invalid fragment"),
             Map.entry("Местоположение", "Location"),
-            Map.entry("Описание", "Description")
+            Map.entry("Описание", "Description"),
+            Map.entry("Пуск", "Run"),
+            Map.entry("Пуск (Flex)", "Run (Flex)"),
+            Map.entry("Пуск (ANTLR)", "Run (ANTLR)")
     );
 
     private static final Map<String, String> englishToRussianMap = new HashMap<>();

@@ -54,4 +54,42 @@ class LambdaParserTest {
         assertTrue(lexicalResult.getErrors().stream()
                 .anyMatch(error -> error.getDescription().contains("Недопустимый символ")));
     }
+
+    @Test
+    void parsesMultilineInput() {
+        Scanner.LexicalResult lexicalResult = Scanner.analyze(
+                "calc = lambda a, b: a + b;\n" +
+                "mab = lambda sdf, fdg: sdf + (sdf + fdg);"
+        );
+
+        assertTrue(lexicalResult.getErrors().isEmpty());
+        assertTrue(LambdaParser.parse(lexicalResult.getLexemes()).isSuccess());
+    }
+
+    @Test
+    void parsesMultilineInputWithThreeLines() {
+        Scanner.LexicalResult lexicalResult = Scanner.analyze(
+                "a = lambda x: x;\n" +
+                "b = lambda y: y * 2;\n" +
+                "c = lambda z: z + 1;"
+        );
+
+        assertTrue(lexicalResult.getErrors().isEmpty());
+        assertTrue(LambdaParser.parse(lexicalResult.getLexemes()).isSuccess());
+    }
+
+    @Test
+    void reportsErrorForInvalidSyntaxInMultiline() {
+        Scanner.LexicalResult lexicalResult = Scanner.analyze(
+                "a = lambda x: x;\n" +
+                "b = lambda y: y *;\n" +
+                "c = lambda z: z + 1;"
+        );
+
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
+
+        assertFalse(parseResult.isSuccess());
+        assertTrue(parseResult.getErrors().stream()
+                .anyMatch(error -> error.getDescription().contains("Ожидался")));
+    }
 }

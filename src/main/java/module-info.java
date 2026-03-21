@@ -12,7 +12,10 @@ module com.example.compilers_laba {
     requires java.desktop;
     requires org.fxmisc.richtext;
     requires reactfx;
+    requires org.antlr.antlr4.runtime;
 
     opens com.example.compilers_laba1 to javafx.fxml;
     exports com.example.compilers_laba1;
+    exports scanner;
+    exports antlr;
 }

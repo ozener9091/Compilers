@@ -39,6 +39,7 @@
                 <Menu text="Пуск">
                     <MenuItem fx:id="runButton" text="Пуск" onAction="#runClick"/>
                     <MenuItem fx:id="runFlexBisonButton" text="Пуск (Flex)" onAction="#runFlexBisonClick"/>
+                    <MenuItem fx:id="runAntlrButton" text="Пуск (ANTLR)" onAction="#runAntlrClick"/>
                 </Menu>
             </MenuBar>
         </top>
