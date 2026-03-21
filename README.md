@@ -282,16 +282,27 @@ mvn javafx:run
 Т.к. требуется сделать только лексический анализатор, будем использовать только flex
 
 Определение токенов для flex
+
 >#define ID          1
+>
 >#define LAMBDA      2
+>
 >#define ASSIGN      3
+>
 >#define COMMA       4
+>
 >#define COLON       5
+>
 >#define PLUS        6
+>
 >#define LPAREN      7
+>
 >#define RPAREN      8
+>
 >#define MULT        9
+>
 >#define SPACE       10
+>
 >#define SEMICOLON   11
 
 
