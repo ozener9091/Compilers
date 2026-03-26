@@ -98,6 +98,20 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem runAntlrButton;
 
+    //  Меню Регулярки
+    @FXML
+    private Menu regexLabel;
+    @FXML
+    private MenuItem regexIdentifierButton;
+    @FXML
+    private MenuItem regexUsernameButton;
+    @FXML
+    private MenuItem regexLongitudeButton;
+
+    //  Меню Вывод
+    @FXML
+    private Menu outputLabel;
+
     //  Панель инструментов
     @FXML
     private Tooltip createTooltip;
@@ -144,6 +158,16 @@ public class Controller implements Initializable {
     private TableColumn<OutputEntry, String> tokenColumn;
     @FXML
     private TableColumn<OutputEntry, String> locationColumn;
+
+    //  Таблица с результатами регулярных выражений
+    @FXML
+    private TableView<RegexMatchEntry> regexTable;
+    @FXML
+    private TableColumn<RegexMatchEntry, String> regexMatchColumn;
+    @FXML
+    private TableColumn<RegexMatchEntry, String> regexPositionColumn;
+    @FXML
+    private TableColumn<RegexMatchEntry, String> regexLengthColumn;
 
     //  Таблица с ошибками
     @FXML
@@ -231,6 +255,15 @@ public class Controller implements Initializable {
         localizationList.add(runFlexBisonButton);
         localizationList.add(runAntlrButton);
 
+        //  Меню Регулярки
+        localizationList.add(regexLabel);
+        localizationList.add(regexIdentifierButton);
+        localizationList.add(regexUsernameButton);
+        localizationList.add(regexLongitudeButton);
+
+        //  Меню Вывод
+        localizationList.add(outputLabel);
+
         //  Таблица с ошибками
         localizationList.add(typeColumn);
         localizationList.add(contentColumn);
@@ -244,6 +277,7 @@ public class Controller implements Initializable {
 
     private void getOutputService(){
         OutputTable.initOutputTable(codeColumn, tokenTypeColumn, tokenColumn, locationColumn, outputTable);
+        RegexOutputTable.initRegexTable(regexMatchColumn, regexPositionColumn, regexLengthColumn, regexTable);
     }
 
     private void initWindowStyle(){
@@ -738,6 +772,75 @@ public class Controller implements Initializable {
         locale = Locale.English;
         russianSelectButton.setSelected(false);
         englishSelectButton.setSelected(true);
+    }
+
+    @FXML
+    protected void regexIdentifierClick() {
+        analyzeRegex("identifier");
+    }
+
+    @FXML
+    protected void regexUsernameClick() {
+        analyzeRegex("username");
+    }
+
+    @FXML
+    protected void regexLongitudeClick() {
+        analyzeRegex("longitude");
+    }
+
+    private void analyzeRegex(String type) {
+        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
+
+        // Очистка таблиц
+        regexTable.getItems().clear();
+        outputTable.getItems().clear();
+
+        List<RegexMatchEntry> matches;
+        String typeName;
+
+        switch (type) {
+            case "identifier":
+                matches = RegexAnalyzer.findIdentifiers(inputText);
+                typeName = "Идентификатор";
+                break;
+            case "username":
+                matches = RegexAnalyzer.findUsernames(inputText);
+                typeName = "Имя пользователя";
+                break;
+            case "longitude":
+                matches = RegexAnalyzer.findLongitudes(inputText);
+                typeName = "Долгота";
+                break;
+            default:
+                matches = new ArrayList<>();
+                typeName = "";
+        }
+
+        // Заполнение таблицы результатов
+        regexTable.getItems().addAll(matches);
+        regexTable.refresh();
+
+        // Подсветка найденных совпадений в CodeArea
+        CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
+        highlightRegexMatches(activeCodeArea, matches);
+
+        // Обновление статуса
+        int matchCount = matches.size();
+        statusLabel.setText(String.format("%s: найдено совпадений: %d", typeName, matchCount));
+    }
+
+    private void highlightRegexMatches(CodeArea codeArea, List<RegexMatchEntry> matches) {
+        // Сброс всех стилей
+        codeArea.clearStyle(0, codeArea.getLength());
+
+        // Применение подсветки для каждого совпадения
+        for (RegexMatchEntry match : matches) {
+            int start = Integer.parseInt(match.getPosition());
+            int length = Integer.parseInt(match.getLength());
+            // Подсветка жёлтым фоном
+            codeArea.setStyle(start, start + length, java.util.Set.of("-fx-background-color: #ffff00; -fx-font-weight: bold;"));
+        }
     }
 
 }

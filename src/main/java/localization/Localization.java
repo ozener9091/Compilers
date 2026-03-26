@@ -50,7 +50,15 @@ public class Localization {
             Map.entry("Описание", "Description"),
             Map.entry("Пуск", "Run"),
             Map.entry("Пуск (Flex)", "Run (Flex)"),
-            Map.entry("Пуск (ANTLR)", "Run (ANTLR)")
+            Map.entry("Пуск (ANTLR)", "Run (ANTLR)"),
+            Map.entry("Регулярки", "Regex"),
+            Map.entry("Идентификатор", "Identifier"),
+            Map.entry("Имя пользователя", "Username"),
+            Map.entry("Долгота", "Longitude"),
+            Map.entry("Вывод", "Output"),
+            Map.entry("Найденная подстрока", "Matched substring"),
+            Map.entry("Позиция", "Position"),
+            Map.entry("Длина", "Length")
     );
 
     private static final Map<String, String> englishToRussianMap = new HashMap<>();
