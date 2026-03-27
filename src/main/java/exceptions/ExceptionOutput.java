@@ -9,8 +9,12 @@ public class ExceptionOutput extends Throwable {
         this.errorTable = errorTable;
     }
 
-    public void ThrowException(String message){
+    public ExceptionOutput() {
+        this.errorTable = null;
+    }
 
+    public void ThrowException(String message){
+        System.err.println("Exception: " + message);
     }
 }
 

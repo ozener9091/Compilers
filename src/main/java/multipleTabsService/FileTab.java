@@ -7,8 +7,6 @@ import org.fxmisc.richtext.LineNumberFactory;
 
 import java.io.File;
 
-import static highlighting.HighlightingService.setupSyntaxHighlighting;
-
 public class FileTab {
     private final Tab tab;
     private final CodeArea codeArea;
@@ -26,7 +24,6 @@ public class FileTab {
         codeArea.setStyle("-fx-font-size: " + textSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
         DragAndDropService.setupDragAndDrop(codeArea);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        setupSyntaxHighlighting(codeArea);
 
         if (tab.getText() == null) {
             tab.setText("Новый документ");

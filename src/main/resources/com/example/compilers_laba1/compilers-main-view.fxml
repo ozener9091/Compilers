@@ -142,38 +142,8 @@
         </AnchorPane>
 
         <VBox VBox.vgrow="ALWAYS">
-            <!-- Меню модулей -->
-            <MenuBar>
-                <Menu fx:id="analyzerLabel" text="Анализатор"/>
-                <Menu fx:id="pseudoCodeLabel" text="Псевдокод"/>
-                <Menu fx:id="controlFlowGraphLabel" text="Граф потока управления"/>
-                <Menu fx:id="outputLabel" text="Вывод"/>
-            </MenuBar>
 
             <SplitPane orientation="VERTICAL" dividerPositions="0.5,0.75" VBox.vgrow="ALWAYS">
-                <!-- Поле вывода -->
-                <AnchorPane VBox.vgrow="ALWAYS">
-                    <VBox spacing="5"
-                          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                        <TableView fx:id="outputTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="codeColumn" text="Условный код"/>
-                                <TableColumn fx:id="tokenTypeColumn" text="Тип"/>
-                                <TableColumn fx:id="tokenColumn" text="Лексема"/>
-                                <TableColumn fx:id="locationColumn" text="Местоположение"/>
-                            </columns>
-                        </TableView>
-                    </VBox>
-                    <HBox spacing="5"
-                          AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
-                        <Button onAction="#increaseOutputClick" text="+"
-                                style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
-                        <Button onAction="#decreaseOutputClick" text="-"
-                                style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
-                    </HBox>
-                </AnchorPane>
-
                 <!-- Таблица с результатами регулярных выражений -->
                 <AnchorPane VBox.vgrow="ALWAYS">
                     <VBox spacing="5"
@@ -184,21 +154,6 @@
                                 <TableColumn fx:id="regexMatchColumn" text="Найденная подстрока"/>
                                 <TableColumn fx:id="regexPositionColumn" text="Позиция"/>
                                 <TableColumn fx:id="regexLengthColumn" text="Длина"/>
-                            </columns>
-                        </TableView>
-                    </VBox>
-                </AnchorPane>
-
-                <!-- Таблица с ошибками -->
-                <AnchorPane VBox.vgrow="ALWAYS">
-                    <VBox spacing="5"
-                          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                        <TableView fx:id="errorTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="typeColumn" text="Неверный фрагмент"/>
-                                <TableColumn fx:id="pageColumn" text="Местоположение"/>
-                                <TableColumn fx:id="contentColumn" text="Описание"/>
                             </columns>
                         </TableView>
                     </VBox>

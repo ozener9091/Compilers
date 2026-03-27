@@ -5,16 +5,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Menu;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
-import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -25,11 +22,14 @@ import java.util.ResourceBundle;
 import hotkeysService.*;
 import localization.*;
 import org.fxmisc.richtext.CodeArea;
-import parser.LambdaParser;
 import scanner.*;
 import exceptions.*;
 import save.file.*;
 import multipleTabsService.*;
+import highlighting.HighlightingService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 enum Locale {
@@ -147,18 +147,6 @@ public class Controller implements Initializable {
     @FXML
     private Menu controlFlowGraphLabel;
 
-    //  Поле вывода
-    @FXML
-    private TableView<OutputEntry> outputTable;
-    @FXML
-    private TableColumn<OutputEntry, String> codeColumn;
-    @FXML
-    private TableColumn<OutputEntry, String> tokenTypeColumn;
-    @FXML
-    private TableColumn<OutputEntry, String> tokenColumn;
-    @FXML
-    private TableColumn<OutputEntry, String> locationColumn;
-
     //  Таблица с результатами регулярных выражений
     @FXML
     private TableView<RegexMatchEntry> regexTable;
@@ -169,23 +157,10 @@ public class Controller implements Initializable {
     @FXML
     private TableColumn<RegexMatchEntry, String> regexLengthColumn;
 
-    //  Таблица с ошибками
-    @FXML
-    private TableView<ErrorEntry> errorTable;
-    @FXML
-    private TableColumn<ErrorEntry, String> typeColumn;
-    @FXML
-    private TableColumn<ErrorEntry, String> contentColumn;
-    @FXML
-    private TableColumn<ErrorEntry, String> pageColumn;
-
 
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
-    private List<ErrorEntry> currentErrors = new ArrayList<>();
-    private List<Scanner.ErrorInfo> lexicalErrors = new ArrayList<>();
-    private double outputCurrentFontSize = 14;
     private Stage stage;
 
     @Override
@@ -197,10 +172,9 @@ public class Controller implements Initializable {
 
         initWindowStyle();
         addAllToLocalizationList();
-        getErrorService();
+        exceptionOutput = new ExceptionOutput();
         getOutputService();
         initHotkeys();
-        initErrorNavigation();
     }
 
     private void addAllToLocalizationList() {
@@ -245,11 +219,6 @@ public class Controller implements Initializable {
         localizationList.add(cutTooltip);
         localizationList.add(pasteTooltip);
 
-        //  Меню вывода
-        localizationList.add(analyzerLabel);
-        localizationList.add(pseudoCodeLabel);
-        localizationList.add(controlFlowGraphLabel);
-
         //  Меню Пуск
         localizationList.add(runButton);
         localizationList.add(runFlexBisonButton);
@@ -260,28 +229,14 @@ public class Controller implements Initializable {
         localizationList.add(regexIdentifierButton);
         localizationList.add(regexUsernameButton);
         localizationList.add(regexLongitudeButton);
-
-        //  Меню Вывод
-        localizationList.add(outputLabel);
-
-        //  Таблица с ошибками
-        localizationList.add(typeColumn);
-        localizationList.add(contentColumn);
-        localizationList.add(pageColumn);
-    }
-
-    private void getErrorService(){
-        exceptionOutput = new ExceptionOutput(errorTable);
-        ErrorTable.initErrorTable(typeColumn, contentColumn, pageColumn, errorTable);
     }
 
     private void getOutputService(){
-        OutputTable.initOutputTable(codeColumn, tokenTypeColumn, tokenColumn, locationColumn, outputTable);
         RegexOutputTable.initRegexTable(regexMatchColumn, regexPositionColumn, regexLengthColumn, regexTable);
     }
 
     private void initWindowStyle(){
-        outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
+        // Стили больше не требуются
     }
 
     private void initHotkeys(){
@@ -301,69 +256,6 @@ public class Controller implements Initializable {
         });
     }
 
-    private void initErrorNavigation() {
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem goToErrorItem = new MenuItem("Перейти к ошибке");
-        goToErrorItem.setOnAction(event -> {
-            ErrorEntry selectedError = errorTable.getSelectionModel().getSelectedItem();
-            if (selectedError != null) {
-                navigateToError(selectedError);
-            }
-        });
-        contextMenu.getItems().add(goToErrorItem);
-        errorTable.setContextMenu(contextMenu);
-
-        errorTable.setRowFactory(tv -> {
-            TableRow<ErrorEntry> row = new TableRow<>();
-            row.hoverProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal && !row.isEmpty()) {
-                    row.setStyle("-fx-background-color: #ffcccc;");
-                } else if (!row.isEmpty()) {
-                    row.setStyle("");
-                }
-            });
-
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 1 && !row.isEmpty()) {
-                    ErrorEntry errorEntry = row.getItem();
-                    navigateToError(errorEntry);
-                }
-            });
-
-            return row;
-        });
-    }
-
-    private void navigateToError(ErrorEntry errorEntry) {
-        if (errorEntry == null || errorEntry.getPage() == null) return;
-
-        try {
-            String page = errorEntry.getPage();
-            if (page == null || page.isEmpty()) return;
-
-            String[] position = page.split(":");
-            if (position.length < 2) return;
-
-            int line = Integer.parseInt(position[0]);
-            int column = Integer.parseInt(position[1]);
-
-            CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
-            if (activeCodeArea == null) return;
-
-            int caretPosition = getPositionFromLineAndColumn(activeCodeArea.getText(), line, column);
-
-            activeCodeArea.moveTo(caretPosition);
-            activeCodeArea.requestFocus();
-
-            highlightErrorToken(activeCodeArea, errorEntry.getContent(), caretPosition);
-
-            statusLabel.setText("Переход к ошибке: " + errorEntry.getContent());
-
-        } catch (NumberFormatException e) {
-            exceptionOutput.ThrowException("Ошибка при парсинге позиции ошибки");
-        }
-    }
-
     private int getPositionFromLineAndColumn(String text, int line, int column) {
         String[] lines = text.split("\n", -1);
 
@@ -377,50 +269,6 @@ public class Controller implements Initializable {
         }
 
         return Math.min(position, text.length());
-    }
-
-    private void highlightErrorToken(CodeArea codeArea, String errorContent, int caretPosition) {
-        String token = extractTokenFromError(errorContent);
-        if (token != null && !token.isEmpty()) {
-            codeArea.selectRange(caretPosition, caretPosition + token.length());
-        } else {
-            codeArea.selectRange(caretPosition, caretPosition);
-        }
-    }
-
-    private String extractTokenFromError(String errorContent) {
-        if (errorContent == null) return null;
-
-        int startQuote = errorContent.indexOf('\'');
-        int endQuote = errorContent.lastIndexOf('\'');
-
-        if (startQuote != -1 && endQuote != -1 && startQuote < endQuote) {
-            return errorContent.substring(startQuote + 1, endQuote);
-        }
-
-        return null;
-    }
-
-    private void highlightAllErrors(CodeArea codeArea, List<Scanner.ErrorInfo> errors) {
-        codeArea.setStyleSpans(0, codeArea.getStyleSpans(0, codeArea.getLength()));
-
-        for (Scanner.ErrorInfo error : errors) {
-            try {
-                String[] position = error.getPage().split(":");
-                if (position.length < 2) continue;
-
-                int line = Integer.parseInt(position[0]);
-                int column = Integer.parseInt(position[1]);
-
-                int startPos = getPositionFromLineAndColumn(codeArea.getText(), line, column);
-                String token = extractTokenFromError(error.getContent());
-
-                if (token != null && !token.isEmpty()) {
-                    int endPos = startPos + token.length();
-                }
-            } catch (Exception e) {
-            }
-        }
     }
 
     @FXML
@@ -561,172 +409,20 @@ public class Controller implements Initializable {
 
     @FXML
     protected void runClick() {
-        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
-
-        outputTable.getItems().clear();
-        errorTable.getItems().clear();
-        currentErrors.clear();
-
-        Scanner.LexicalResult lexicalResult = Scanner.analyze(inputText);
-        List<Scanner.TokenInfo> tokens = lexicalResult.getTokens();
-        lexicalErrors = lexicalResult.getErrors();
-
-        for (Scanner.TokenInfo tokenInfo : tokens) {
-            outputTable.getItems().add(new OutputEntry(
-                    tokenInfo.getCode(),
-                    tokenInfo.getTokenType(),
-                    tokenInfo.getToken(),
-                    tokenInfo.getLocation()
-            ));
-        }
-
-        for (Scanner.ErrorInfo errorInfo : lexicalErrors) {
-            currentErrors.add(new ErrorEntry(
-                    errorInfo.getFragment(),
-                    errorInfo.getDescription(),
-                    errorInfo.getLocation(),
-                    errorInfo.getLine(),
-                    errorInfo.getColumn(),
-                    errorInfo.getHighlightLength()
-            ));
-        }
-
-        if (lexicalErrors.isEmpty()) {
-            LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
-            for (Scanner.ErrorInfo errorInfo : parseResult.getErrors()) {
-                currentErrors.add(new ErrorEntry(
-                        errorInfo.getFragment(),
-                        errorInfo.getDescription(),
-                        errorInfo.getLocation(),
-                        errorInfo.getLine(),
-                        errorInfo.getColumn(),
-                        errorInfo.getHighlightLength()
-                ));
-            }
-        }
-
-        errorTable.getItems().setAll(currentErrors);
-        outputTable.refresh();
-        errorTable.refresh();
-
-        if (currentErrors.isEmpty()) {
-            statusLabel.setText("Синтаксический анализ завершен. Ошибок не найдено.");
-        } else {
-            statusLabel.setText(!lexicalErrors.isEmpty()
-                    ? "Найдено ошибок: " + currentErrors.size() + ". Сначала исправьте лексические ошибки."
-                    : "Найдено ошибок: " + currentErrors.size() + ". Выберите строку в таблице для перехода.");
-        }
-
-        CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
-        if (activeCodeArea != null && !currentErrors.isEmpty()) {
-            navigateToError(currentErrors.getFirst());
-        }
-
+        // Анализ больше не требуется
+        statusLabel.setText("Анализ не требуется для работы с регулярными выражениями");
     }
 
     @FXML
     protected void runFlexBisonClick() {
-        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
-
-        outputTable.getItems().clear();
-        errorTable.getItems().clear();
-        currentErrors.clear();
-
-        try {
-            FlexAdapter.Result result = FlexAdapter.parse(inputText);
-
-            for (Scanner.TokenInfo tokenInfo : result.getTokens()) {
-                outputTable.getItems().add(new OutputEntry(
-                        tokenInfo.getCode(),
-                        tokenInfo.getTokenType(),
-                        tokenInfo.getToken(),
-                        tokenInfo.getLocation()
-                ));
-            }
-
-            for (Scanner.ErrorInfo errorInfo : result.getErrors()) {
-                currentErrors.add(new ErrorEntry(
-                        errorInfo.getFragment(),
-                        errorInfo.getDescription(),
-                        errorInfo.getLocation(),
-                        errorInfo.getLine(),
-                        errorInfo.getColumn(),
-                        errorInfo.getHighlightLength()
-                ));
-            }
-
-            errorTable.getItems().setAll(currentErrors);
-            outputTable.refresh();
-            errorTable.refresh();
-
-            statusLabel.setText("Flex/Bison анализ завершен. Токенов: " + result.getTokens().size() + ", ошибок: " + currentErrors.size());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            statusLabel.setText("Ошибка при запуске внешнего анализатора: " + e.getMessage());
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Ошибка");
-            alert.setHeaderText("Не удалось запустить внешний анализатор");
-            alert.setContentText("Убедитесь, что файл parser.exe находится в папке приложения.\n" +
-                    "Текущая рабочая директория: " + System.getProperty("user.dir"));
-            alert.showAndWait();
-        }
+        // Анализ больше не требуется
+        statusLabel.setText("Анализ не требуется для работы с регулярными выражениями");
     }
 
     @FXML
     protected void runAntlrClick() {
-        String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
-
-        outputTable.getItems().clear();
-        errorTable.getItems().clear();
-        currentErrors.clear();
-
-        try {
-            AntlrAdapter.AntlrResult result = AntlrAdapter.analyze(inputText);
-
-            for (Scanner.TokenInfo tokenInfo : result.getTokens()) {
-                outputTable.getItems().add(new OutputEntry(
-                        tokenInfo.getCode(),
-                        tokenInfo.getTokenType(),
-                        tokenInfo.getToken(),
-                        tokenInfo.getLocation()
-                ));
-            }
-
-            for (Scanner.ErrorInfo errorInfo : result.getAllErrors()) {
-                currentErrors.add(new ErrorEntry(
-                        errorInfo.getFragment(),
-                        errorInfo.getDescription(),
-                        errorInfo.getLocation(),
-                        errorInfo.getLine(),
-                        errorInfo.getColumn(),
-                        errorInfo.getHighlightLength()
-                ));
-            }
-
-            errorTable.getItems().setAll(currentErrors);
-            outputTable.refresh();
-            errorTable.refresh();
-
-            if (currentErrors.isEmpty()) {
-                statusLabel.setText("ANTLR анализ завершен. Токенов: " + result.getTokens().size() + ", ошибок не найдено.");
-            } else {
-                statusLabel.setText("ANTLR анализ завершен. Токенов: " + result.getTokens().size() + ", ошибок: " + currentErrors.size());
-            }
-
-            if (!currentErrors.isEmpty()) {
-                navigateToError(currentErrors.getFirst());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            statusLabel.setText("Ошибка при запуске ANTLR анализатора: " + e.getMessage());
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Ошибка");
-            alert.setHeaderText("Не удалось запустить ANTLR анализатор");
-            alert.setContentText("Произошла ошибка при выполнении анализа: " + e.getMessage());
-            alert.showAndWait();
-        }
+        // Анализ больше не требуется
+        statusLabel.setText("Анализ не требуется для работы с регулярными выражениями");
     }
 
     @FXML
@@ -738,20 +434,6 @@ public class Controller implements Initializable {
     @FXML
     protected void decreaseInputClick() {
         MultipleTabsService.getActiveFileTab(tabPane, fileTabs).decreaseTextSize();
-    }
-
-    @FXML
-    protected  void increaseOutputClick() {
-        if (outputCurrentFontSize >= 24) return;
-        outputCurrentFontSize += 2;
-        outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
-    }
-
-    @FXML
-    protected  void decreaseOutputClick() {
-        if (outputCurrentFontSize <= 14) return;
-        outputCurrentFontSize -= 2;
-        outputTable.setStyle("-fx-font-size: " + outputCurrentFontSize + "px; -fx-font-family: 'Monospaced'; -fx-padding: 10;");
     }
 
     @FXML
@@ -792,29 +474,33 @@ public class Controller implements Initializable {
     private void analyzeRegex(String type) {
         String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
 
-        // Очистка таблиц
+        // Очистка таблицы
         regexTable.getItems().clear();
-        outputTable.getItems().clear();
 
         List<RegexMatchEntry> matches;
         String typeName;
+        String pattern;
 
         switch (type) {
             case "identifier":
                 matches = RegexAnalyzer.findIdentifiers(inputText);
                 typeName = "Идентификатор";
+                pattern = RegexAnalyzer.IDENTIFIER_PATTERN;
                 break;
             case "username":
                 matches = RegexAnalyzer.findUsernames(inputText);
                 typeName = "Имя пользователя";
+                pattern = RegexAnalyzer.USERNAME_PATTERN;
                 break;
             case "longitude":
                 matches = RegexAnalyzer.findLongitudes(inputText);
                 typeName = "Долгота";
+                pattern = RegexAnalyzer.LONGITUDE_PATTERN;
                 break;
             default:
                 matches = new ArrayList<>();
                 typeName = "";
+                pattern = "";
         }
 
         // Заполнение таблицы результатов
@@ -823,24 +509,11 @@ public class Controller implements Initializable {
 
         // Подсветка найденных совпадений в CodeArea
         CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
-        highlightRegexMatches(activeCodeArea, matches);
+        HighlightingService.applyRegexHighlighting(activeCodeArea, null, pattern);
 
         // Обновление статуса
         int matchCount = matches.size();
         statusLabel.setText(String.format("%s: найдено совпадений: %d", typeName, matchCount));
-    }
-
-    private void highlightRegexMatches(CodeArea codeArea, List<RegexMatchEntry> matches) {
-        // Сброс всех стилей
-        codeArea.clearStyle(0, codeArea.getLength());
-
-        // Применение подсветки для каждого совпадения
-        for (RegexMatchEntry match : matches) {
-            int start = Integer.parseInt(match.getPosition());
-            int length = Integer.parseInt(match.getLength());
-            // Подсветка жёлтым фоном
-            codeArea.setStyle(start, start + length, java.util.Set.of("-fx-background-color: #ffff00; -fx-font-weight: bold;"));
-        }
     }
 
 }
