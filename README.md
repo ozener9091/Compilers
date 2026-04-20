@@ -830,8 +830,10 @@ graph TD
 ## Графическая визуализация AST
 
 Использованы средства JavaFX:
-- `TreeView<String>` для отображения узлов AST.
-- `TreeItem<String>` для построения иерархии узлов (родитель -> потомок).
+- `Pane` как рабочее полотно для отрисовки графа.
+- `Rectangle` и `Text` для визуализации каждого узла AST (тип узла + ключевые атрибуты).
+- `Line` для рёбер между узлами (родитель -> потомок).
+- `ScrollPane` для прокрутки больших деревьев.
 - Отдельное окно (`Stage`) открывается по кнопке `Показать AST`.
 
 Каждый узел отображается с типом и ключевыми атрибутами:
@@ -840,6 +842,60 @@ graph TD
 - `BinaryOpNode [op=...]`
 - `IdentifierNode [name=...]`
 - `IntLiteralNode [value=...]`
+
+### Примеры графа AST (нарисованные)
+
+Тест 1 (корректная строка):
+
+```mermaid
+graph TD
+    P[ProgramNode]
+    L[LambdaDeclNode name=calc]
+    PR[ParametersNode]
+    PA[ParameterNode name=a]
+    PB[ParameterNode name=b]
+    PC[ParameterNode name=c]
+    B[BodyNode]
+    ADD[BinaryOpNode op=+]
+    IA[IdentifierNode name=a]
+    MUL[BinaryOpNode op=*]
+    IB[IdentifierNode name=b]
+    IC[IdentifierNode name=c]
+
+    P --> L
+    L --> PR
+    L --> B
+    PR --> PA
+    PR --> PB
+    PR --> PC
+    B --> ADD
+    ADD --> IA
+    ADD --> MUL
+    MUL --> IB
+    MUL --> IC
+```
+
+Тест 2 (корректная строка с литералом):
+
+```mermaid
+graph TD
+    P[ProgramNode]
+    L[LambdaDeclNode name=inc]
+    PR[ParametersNode]
+    PX[ParameterNode name=x]
+    B[BodyNode]
+    ADD[BinaryOpNode op=+]
+    IX[IdentifierNode name=x]
+    N1[IntLiteralNode value=1]
+
+    P --> L
+    L --> PR
+    PR --> PX
+    L --> B
+    B --> ADD
+    ADD --> IX
+    ADD --> N1
+```
 
 ## Тестовые примеры
 
