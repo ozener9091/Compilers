@@ -8,7 +8,6 @@
       fx:controller="com.example.compilers_laba1.Controller"
       fx:id="mainWindow">
 
-    <!-- Меню -->
     <BorderPane>
         <top>
             <MenuBar>
@@ -19,6 +18,7 @@
                     <MenuItem fx:id="saveAsButton" text="Сохранить как" onAction="#saveAsFileClick"/>
                     <MenuItem fx:id="exitButton" text="Выход" onAction="#exitClick"/>
                 </Menu>
+
                 <Menu fx:id="editLabel" text="Правка">
                     <MenuItem fx:id="undoButton" text="Отменить" onAction="#undoClick"/>
                     <MenuItem fx:id="returnButton" text="Вернуть" onAction="#returnClick"/>
@@ -28,19 +28,24 @@
                     <MenuItem fx:id="removeButton" text="Удалить" onAction="#removeClick"/>
                     <MenuItem fx:id="selectAllButton" text="Выделить все" onAction="#selectAllClick"/>
                 </Menu>
+
                 <Menu fx:id="aboutLabel" text="Справка">
                     <MenuItem fx:id="userManualButton" text="Руководство пользователя" onAction="#userManualClick"/>
                     <MenuItem fx:id="aboutButton" text="О программе" onAction="#aboutClick"/>
                 </Menu>
+
                 <Menu fx:id="languageLabel" text="Язык">
-                    <RadioMenuItem onAction="#englishSelectClick" fx:id="englishSelectButton" text="Английский"/>
-                    <RadioMenuItem onAction="#russianSelectClick" fx:id="russianSelectButton" selected="true"  text="Русский"/>
+                    <RadioMenuItem fx:id="englishSelectButton" text="Английский" onAction="#englishSelectClick"/>
+                    <RadioMenuItem fx:id="russianSelectButton" text="Русский" selected="true" onAction="#russianSelectClick"/>
                 </Menu>
+
                 <Menu text="Пуск">
                     <MenuItem fx:id="runButton" text="Пуск" onAction="#runClick"/>
                     <MenuItem fx:id="runFlexBisonButton" text="Пуск (Flex)" onAction="#runFlexBisonClick"/>
                     <MenuItem fx:id="runAntlrButton" text="Пуск (ANTLR)" onAction="#runAntlrClick"/>
+                    <MenuItem text="Показать AST" onAction="#showAstClick"/>
                 </Menu>
+
                 <Menu fx:id="regexLabel" text="Регулярки">
                     <MenuItem fx:id="regexIdentifierButton" text="Идентификатор" onAction="#regexIdentifierClick"/>
                     <MenuItem fx:id="regexUsernameButton" text="Имя пользователя" onAction="#regexUsernameClick"/>
@@ -50,105 +55,114 @@
         </top>
     </BorderPane>
 
-    <!-- Панель инструментов -->
     <HBox alignment="CENTER_LEFT" spacing="5" style="-fx-background-color: #f5f5f5; -fx-border-width: 0 0 1 0; -fx-border-color: #ddd;">
         <Button onAction="#createClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="📄+" style="-fx-font-size: 20px; -fx-text-fill: #2196F3; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="📄+" style="-fx-font-size: 20px; -fx-text-fill: #2196F3;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="createTooltip" text="Создать новый файл (Ctrl+N)"/>
             </tooltip>
         </Button>
+
         <Button onAction="#loadFileClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="📂" style="-fx-font-size: 20px; -fx-text-fill: #4CAF50; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="📂" style="-fx-font-size: 20px; -fx-text-fill: #4CAF50;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="openTooltip" text="Открыть файл (Ctrl+O)"/>
             </tooltip>
         </Button>
+
         <Button onAction="#saveFileClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="💾" style="-fx-font-size: 20px; -fx-text-fill: #FF9800; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="💾" style="-fx-font-size: 20px; -fx-text-fill: #FF9800;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="saveTooltip" text="Сохранить (Ctrl+S)"/>
             </tooltip>
         </Button>
+
         <Separator orientation="VERTICAL" style="-fx-padding: 0 5 0 5;"/>
+
         <Button onAction="#undoClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="↩️" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="↩" style="-fx-font-size: 20px; -fx-text-fill: #757575;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="undoTooltip" text="Отменить (Ctrl+Z)"/>
             </tooltip>
         </Button>
+
         <Button onAction="#returnClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="↪️" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="↪" style="-fx-font-size: 20px; -fx-text-fill: #757575;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="returnTooltip" text="Вернуть"/>
             </tooltip>
         </Button>
+
         <Button onAction="#copyClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="📋" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="📋" style="-fx-font-size: 20px; -fx-text-fill: #757575;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="copyTooltip" text="Копировать (Ctrl+C)"/>
             </tooltip>
         </Button>
+
         <Button onAction="#cutClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="✂️" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="✂" style="-fx-font-size: 20px; -fx-text-fill: #757575;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="cutTooltip" text="Вырезать (Ctrl+X)"/>
             </tooltip>
         </Button>
+
         <Button onAction="#pasteClick" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
             <graphic>
-                <Label text="📌" style="-fx-font-size: 20px; -fx-text-fill: #757575; -fx-font-family: 'Segoe UI Symbol', 'Arial Unicode MS', 'Apple Color Emoji', 'EmojiOne Color'"/>
+                <Label text="📌" style="-fx-font-size: 20px; -fx-text-fill: #757575;"/>
             </graphic>
             <tooltip>
                 <Tooltip fx:id="pasteTooltip" text="Вставить (Ctrl+V)"/>
             </tooltip>
         </Button>
+
+        <Button onAction="#showAstClick"
+                text="Показать AST"
+                style="-fx-background-color: #e3f2fd; -fx-cursor: hand; -fx-padding: 8 12 8 12; -fx-background-radius: 6;"/>
     </HBox>
 
-    <!-- Поле с информацией об открытом файле (путь) -->
-    <Label fx:id="statusLabel" VBox.vgrow="ALWAYS" alignment="CENTER"></Label>
+    <Label fx:id="statusLabel" alignment="CENTER"/>
 
-    <SplitPane orientation="VERTICAL" dividerPositions="0.6" VBox.vgrow="ALWAYS">
-        <!-- Поле ввода -->
-
+    <SplitPane orientation="VERTICAL" dividerPositions="0.58" VBox.vgrow="ALWAYS">
         <AnchorPane VBox.vgrow="ALWAYS">
             <TabPane fx:id="tabPane"
                      AnchorPane.topAnchor="0.0"
                      AnchorPane.bottomAnchor="0.0"
                      AnchorPane.leftAnchor="0.0"
-                     AnchorPane.rightAnchor="0.0">
-            </TabPane>
+                     AnchorPane.rightAnchor="0.0"/>
             <HBox spacing="5"
-                  AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
-                <Button onAction="#increaseInputClick" text="+"
+                  AnchorPane.bottomAnchor="10.0"
+                  AnchorPane.rightAnchor="10.0">
+                <Button text="+" onAction="#increaseInputClick"
                         style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
-                <Button onAction="#decreaseInputClick" text="-"
+                <Button text="-" onAction="#decreaseInputClick"
                         style="-fx-background-color: rgba(255,255,255,0.8); -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-font-weight: bold;"/>
             </HBox>
         </AnchorPane>
 
         <VBox VBox.vgrow="ALWAYS">
-
-            <SplitPane orientation="VERTICAL" dividerPositions="0.5,0.75" VBox.vgrow="ALWAYS">
-                <!-- Таблица с результатами регулярных выражений -->
+            <SplitPane orientation="VERTICAL" dividerPositions="0.34,0.67" VBox.vgrow="ALWAYS">
                 <AnchorPane VBox.vgrow="ALWAYS">
                     <VBox spacing="5"
-                          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                          AnchorPane.topAnchor="0.0"
+                          AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0">
+                        <Label text="Токены/служебная таблица"/>
                         <TableView fx:id="regexTable" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="regexMatchColumn" text="Найденная подстрока"/>
@@ -156,6 +170,29 @@
                                 <TableColumn fx:id="regexLengthColumn" text="Длина"/>
                             </columns>
                         </TableView>
+                    </VBox>
+                </AnchorPane>
+
+                <AnchorPane VBox.vgrow="ALWAYS">
+                    <VBox spacing="5"
+                          AnchorPane.topAnchor="0.0"
+                          AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0">
+                        <Label text="AST (текстовый вид)"/>
+                        <TextArea fx:id="astOutputArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                </AnchorPane>
+
+                <AnchorPane VBox.vgrow="ALWAYS">
+                    <VBox spacing="5"
+                          AnchorPane.topAnchor="0.0"
+                          AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0">
+                        <Label text="Сообщения об ошибках"/>
+                        <TextArea fx:id="semanticOutputArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                        <Label fx:id="errorCountLabel" text="Количество ошибок: 0"/>
                     </VBox>
                 </AnchorPane>
             </SplitPane>

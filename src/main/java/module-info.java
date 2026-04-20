@@ -17,5 +17,4 @@ module com.example.compilers_laba {
     opens com.example.compilers_laba1 to javafx.fxml;
     exports com.example.compilers_laba1;
     exports scanner;
-    exports antlr;
 }

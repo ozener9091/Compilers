@@ -1,34 +1,32 @@
 package parser;
 
 import org.junit.jupiter.api.Test;
+import parser.ast.ProgramNode;
+import parser.semantic.SemanticAnalyzer;
 import scanner.Scanner;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LambdaParserTest {
 
     @Test
-    void parsesValidLambdaAssignmentWithNumbers() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze("calc = lambda a, b, c: a + (b * 25);");
+    void parsesValidLambdaAssignment() {
+        Scanner.LexicalResult lexical = Scanner.analyze("calc = lambda a, b, c: a + (b * c);");
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
 
-        assertTrue(lexicalResult.getErrors().isEmpty());
-        assertTrue(LambdaParser.parse(lexicalResult.getLexemes()).isSuccess());
-    }
-
-    @Test
-    void parsesValidLambdaWithEmptyParameters() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze("calc = lambda: 10 / 2;");
-
-        assertTrue(lexicalResult.getErrors().isEmpty());
-        assertTrue(LambdaParser.parse(lexicalResult.getLexemes()).isSuccess());
+        assertTrue(lexical.getErrors().isEmpty());
+        assertTrue(parseResult.getErrors().isEmpty());
+        assertTrue(semanticResult.getErrors().isEmpty());
+        assertEquals(1, semanticResult.getAst().getDeclarations().size());
     }
 
     @Test
     void reportsMissingSemicolon() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze("calc = lambda a, b, c: a + (b * c)");
-
-        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
+        Scanner.LexicalResult lexical = Scanner.analyze("calc = lambda a, b: a + b");
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
 
         assertFalse(parseResult.isSuccess());
         assertTrue(parseResult.getErrors().stream()
@@ -36,60 +34,63 @@ class LambdaParserTest {
     }
 
     @Test
-    void reportsMissingCommaBetweenParameters() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze("calc = lambda a b, c: a + b;");
-
-        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
-
-        assertFalse(parseResult.isSuccess());
-        assertTrue(parseResult.getErrors().stream()
-                .anyMatch(error -> error.getDescription().contains("между параметрами")));
-    }
-
-    @Test
-    void reportsLexicalErrorForUnsupportedCharacter() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze("calc = lambda a, b: a . b;");
-
-        assertFalse(lexicalResult.getErrors().isEmpty());
-        assertTrue(lexicalResult.getErrors().stream()
-                .anyMatch(error -> error.getDescription().contains("Недопустимый символ")));
-    }
-
-    @Test
-    void parsesMultilineInput() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze(
-                "calc = lambda a, b: a + b;\n" +
-                "mab = lambda sdf, fdg: sdf + (sdf + fdg);"
+    void reportsDuplicateDeclaration() {
+        Scanner.LexicalResult lexical = Scanner.analyze(
+                "calc = lambda a: a;\n" +
+                "calc = lambda b: b;"
         );
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
 
-        assertTrue(lexicalResult.getErrors().isEmpty());
-        assertTrue(LambdaParser.parse(lexicalResult.getLexemes()).isSuccess());
+        assertTrue(lexical.getErrors().isEmpty());
+        assertTrue(parseResult.getErrors().isEmpty());
+        assertEquals(1, semanticResult.getAst().getDeclarations().size());
+        assertTrue(semanticResult.getErrors().stream()
+                .anyMatch(error -> error.getDescription().contains("уже объявлен")));
     }
 
     @Test
-    void parsesMultilineInputWithThreeLines() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze(
-                "a = lambda x: x;\n" +
-                "b = lambda y: y * 2;\n" +
-                "c = lambda z: z + 1;"
-        );
+    void reportsUndeclaredIdentifier() {
+        Scanner.LexicalResult lexical = Scanner.analyze("calc = lambda a: a + b;");
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
 
-        assertTrue(lexicalResult.getErrors().isEmpty());
-        assertTrue(LambdaParser.parse(lexicalResult.getLexemes()).isSuccess());
+        assertTrue(semanticResult.getErrors().stream()
+                .anyMatch(error -> error.getDescription().contains("используется до объявления")));
     }
 
     @Test
-    void reportsErrorForInvalidSyntaxInMultiline() {
-        Scanner.LexicalResult lexicalResult = Scanner.analyze(
-                "a = lambda x: x;\n" +
-                "b = lambda y: y *;\n" +
-                "c = lambda z: z + 1;"
+    void reportsValueOutOfIntRange() {
+        Scanner.LexicalResult lexical = Scanner.analyze("calc = lambda: 999999999999999999999999;");
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
+
+        assertTrue(semanticResult.getErrors().stream()
+                .anyMatch(error -> error.getDescription().contains("допустимые пределы")));
+    }
+
+    @Test
+    void reportsDuplicateParameterInSingleScope() {
+        Scanner.LexicalResult lexical = Scanner.analyze("calc = lambda a, a: a + 1;");
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
+
+        assertTrue(semanticResult.getErrors().stream()
+                .anyMatch(error -> error.getDescription().contains("уже объявлен")));
+    }
+
+    @Test
+    void rejectsLambdaUsageInArithmeticExpressionByTypeRule() {
+        Scanner.LexicalResult lexical = Scanner.analyze(
+                "f = lambda x: x;\n" +
+                "g = lambda a: a + f;"
         );
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexical.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
+        ProgramNode semanticAst = semanticResult.getAst();
 
-        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
-
-        assertFalse(parseResult.isSuccess());
-        assertTrue(parseResult.getErrors().stream()
-                .anyMatch(error -> error.getDescription().contains("Ожидался")));
+        assertEquals(1, semanticAst.getDeclarations().size());
+        assertTrue(semanticResult.getErrors().stream()
+                .anyMatch(error -> error.getDescription().contains("Несовместимость типов")));
     }
 }

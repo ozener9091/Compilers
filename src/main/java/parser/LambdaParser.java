@@ -1,57 +1,39 @@
 package parser;
 
+import parser.ast.BinaryOpNode;
+import parser.ast.ExpressionNode;
+import parser.ast.IdentifierNode;
+import parser.ast.LambdaDeclarationNode;
+import parser.ast.NumberLiteralNode;
+import parser.ast.ParameterNode;
+import parser.ast.ProgramNode;
 import scanner.Scanner;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
-public class LambdaParser {
+public final class LambdaParser {
 
-    public static final String RECURSIVE_DESCENT_GRAMMAR = """
-            <program> -> <statement> <program-tail>
-            <program-tail> -> <statement> <program-tail> | e
-            <statement> -> <identifier> '=' <lambda-expression> ';'
-            <identifier> -> letter <identifier-tail>
-            <identifier-tail> -> letter | digit | '_' <identifier-tail> | e
-            <lambda-expression> -> 'lambda' <parameters> ':' <expression>
-            <parameters> -> e | <identifier> <parameters-tail>
-            <parameters-tail> -> ',' <identifier> <parameters-tail> | e
-            <expression> -> <term> <expression-tail>
-            <expression-tail> -> '+' <term> <expression-tail> | '-' <term> <expression-tail> | e
-            <term> -> <factor> <term-tail>
-            <term-tail> -> '*' <factor> <term-tail> | '/' <factor> <term-tail> | e
-            <factor> -> '(' <expression> ')' | <identifier> | <number>
-            """;
-
-    private static final EnumSet<Scanner.TokenKind> STATEMENT_FOLLOW =
-            EnumSet.of(Scanner.TokenKind.EOF);
-    private static final EnumSet<Scanner.TokenKind> PARAMETERS_FOLLOW =
-            EnumSet.of(Scanner.TokenKind.COLON, Scanner.TokenKind.SEMICOLON, Scanner.TokenKind.EOF);
-    private static final EnumSet<Scanner.TokenKind> EXPRESSION_FOLLOW =
-            EnumSet.of(Scanner.TokenKind.RPAREN, Scanner.TokenKind.SEMICOLON, Scanner.TokenKind.EOF);
-    private static final EnumSet<Scanner.TokenKind> TERM_FOLLOW =
-            EnumSet.of(
-                    Scanner.TokenKind.PLUS,
-                    Scanner.TokenKind.MINUS,
-                    Scanner.TokenKind.RPAREN,
-                    Scanner.TokenKind.SEMICOLON,
-                    Scanner.TokenKind.EOF
-            );
-    private static final EnumSet<Scanner.TokenKind> FACTOR_START =
-            EnumSet.of(Scanner.TokenKind.IDENTIFIER, Scanner.TokenKind.NUMBER, Scanner.TokenKind.LPAREN);
+    private LambdaParser() {
+    }
 
     public static ParseResult parse(List<Scanner.Lexeme> lexemes) {
-        ParserState parser = new ParserState(lexemes);
-        parser.parseProgram();
-        return new ParseResult(parser.errors);
+        ParserState parserState = new ParserState(lexemes);
+        ProgramNode ast = parserState.parseProgram();
+        return new ParseResult(ast, parserState.errors);
     }
 
     public static class ParseResult {
+        private final ProgramNode ast;
         private final List<Scanner.ErrorInfo> errors;
 
-        public ParseResult(List<Scanner.ErrorInfo> errors) {
-            this.errors = errors;
+        public ParseResult(ProgramNode ast, List<Scanner.ErrorInfo> errors) {
+            this.ast = ast;
+            this.errors = errors == null ? List.of() : List.copyOf(errors);
+        }
+
+        public ProgramNode getAst() {
+            return ast;
         }
 
         public boolean isSuccess() {
@@ -69,265 +51,199 @@ public class LambdaParser {
         private int currentIndex = 0;
 
         private ParserState(List<Scanner.Lexeme> lexemes) {
-            this.lexemes = lexemes == null ? List.of() : lexemes;
-        }
-
-        private void parseProgram() {
-            if (isAtEnd()) {
-                return;
-            }
-            
-            parseStatement();
-            
-            while (!isAtEnd() && current().getKind() == Scanner.TokenKind.IDENTIFIER) {
-                parseStatement();
-            }
-            
-            reportTrailingTokens();
-        }
-
-        private void parseStatement() {
-            consume(
-                    Scanner.TokenKind.IDENTIFIER,
-                    "идентификатор слева от '='",
-                    EnumSet.of(Scanner.TokenKind.ASSIGN, Scanner.TokenKind.LAMBDA),
-                    STATEMENT_FOLLOW
-            );
-
-            consume(
-                    Scanner.TokenKind.ASSIGN,
-                    "знак '=' после имени функции",
-                    EnumSet.of(Scanner.TokenKind.LAMBDA, Scanner.TokenKind.IDENTIFIER, Scanner.TokenKind.COLON),
-                    STATEMENT_FOLLOW
-            );
-
-            parseLambdaExpression();
-
-            consume(
-                    Scanner.TokenKind.SEMICOLON,
-                    "точка с запятой ';' в конце выражения",
-                    EnumSet.noneOf(Scanner.TokenKind.class),
-                    STATEMENT_FOLLOW
-            );
-        }
-
-        private void parseLambdaExpression() {
-            consume(
-                    Scanner.TokenKind.LAMBDA,
-                    "ключевое слово 'lambda'",
-                    EnumSet.of(Scanner.TokenKind.IDENTIFIER, Scanner.TokenKind.COLON),
-                    STATEMENT_FOLLOW
-            );
-
-            parseParameters();
-
-            consume(
-                    Scanner.TokenKind.COLON,
-                    "двоеточие ':' после списка параметров",
-                    FACTOR_START,
-                    STATEMENT_FOLLOW
-            );
-
-            parseExpression();
-        }
-
-        private void parseParameters() {
-            if (check(Scanner.TokenKind.COLON)) {
-                return;
-            }
-
-            consume(
-                    Scanner.TokenKind.IDENTIFIER,
-                    "идентификатор параметра",
-                    EnumSet.of(Scanner.TokenKind.COMMA, Scanner.TokenKind.COLON),
-                    PARAMETERS_FOLLOW
-            );
-
-            parseParametersTail();
-        }
-
-        private void parseParametersTail() {
-            if (match(Scanner.TokenKind.COMMA)) {
-                consume(
-                        Scanner.TokenKind.IDENTIFIER,
-                        "идентификатор параметра после ','",
-                        EnumSet.of(Scanner.TokenKind.COMMA, Scanner.TokenKind.COLON),
-                        PARAMETERS_FOLLOW
-                );
-                parseParametersTail();
-                return;
-            }
-
-            if (check(Scanner.TokenKind.IDENTIFIER)) {
-                reportCurrent(current(), "Ожидалась ',' между параметрами.");
-                advance();
-                parseParametersTail();
-                return;
-            }
-
-            if (!PARAMETERS_FOLLOW.contains(current().getKind())) {
-                reportCurrent(current(), "Ожидалась ',' или ':' после параметра.");
-                synchronize(PARAMETERS_FOLLOW);
+            if (lexemes == null || lexemes.isEmpty()) {
+                this.lexemes = List.of(new Scanner.Lexeme(Scanner.TokenKind.EOF, "<EOF>", 1, 1));
+            } else {
+                this.lexemes = lexemes;
             }
         }
 
-        private void parseExpression() {
-            parseTerm();
-            parseExpressionTail();
-        }
+        private ProgramNode parseProgram() {
+            List<LambdaDeclarationNode> declarations = new ArrayList<>();
 
-        private void parseExpressionTail() {
-            if (match(Scanner.TokenKind.PLUS) || match(Scanner.TokenKind.MINUS)) {
-                parseTerm();
-                parseExpressionTail();
-                return;
-            }
-
-            if (!EXPRESSION_FOLLOW.contains(current().getKind())) {
-                reportCurrent(current(), "Ожидался оператор '+', '-', или завершение выражения.");
-                synchronize(EXPRESSION_FOLLOW);
-            }
-        }
-
-        private void parseTerm() {
-            parseFactor();
-            parseTermTail();
-        }
-
-        private void parseTermTail() {
-            if (match(Scanner.TokenKind.STAR) || match(Scanner.TokenKind.SLASH)) {
-                parseFactor();
-                parseTermTail();
-                return;
-            }
-
-            if (!TERM_FOLLOW.contains(current().getKind())) {
-                reportCurrent(current(), "Ожидался оператор '*', '/', или завершение подвыражения.");
-                synchronize(union(TERM_FOLLOW, EXPRESSION_FOLLOW));
-            }
-        }
-
-        private void parseFactor() {
-            if (match(Scanner.TokenKind.IDENTIFIER) || match(Scanner.TokenKind.NUMBER)) {
-                return;
-            }
-
-            if (match(Scanner.TokenKind.LPAREN)) {
-                parseExpression();
-                consume(
-                        Scanner.TokenKind.RPAREN,
-                        "закрывающая скобка ')'",
-                        TERM_FOLLOW,
-                        EXPRESSION_FOLLOW
-                );
-                return;
-            }
-
-            if (EnumSet.of(
-                    Scanner.TokenKind.PLUS,
-                    Scanner.TokenKind.MINUS,
-                    Scanner.TokenKind.STAR,
-                    Scanner.TokenKind.SLASH,
-                    Scanner.TokenKind.RPAREN,
-                    Scanner.TokenKind.SEMICOLON,
-                    Scanner.TokenKind.EOF
-            ).contains(current().getKind())) {
-                reportCurrent(current(), "Ожидался идентификатор, число, или подвыражение в скобках.");
-                return;
-            }
-
-            reportCurrent(current(), "Недопустимый фрагмент в выражении. Ожидался идентификатор, число, или '('.");
-            synchronize(union(FACTOR_START, EXPRESSION_FOLLOW, TERM_FOLLOW));
-            if (FACTOR_START.contains(current().getKind())) {
-                parseFactor();
-            }
-        }
-
-        private void reportTrailingTokens() {
             while (!isAtEnd()) {
-                reportCurrent(current(), "Лишний фрагмент после завершения конструкции.");
-                advance();
+                LambdaDeclarationNode declaration = parseStatement();
+                if (declaration != null) {
+                    declarations.add(declaration);
+                }
             }
+
+            return new ProgramNode(declarations);
         }
 
-        private Scanner.Lexeme consume(
-                Scanner.TokenKind expected,
-                String expectedDescription,
-                EnumSet<Scanner.TokenKind> insertionFollowers,
-                EnumSet<Scanner.TokenKind> syncSet
-        ) {
-            if (match(expected)) {
-                return previous();
+        private LambdaDeclarationNode parseStatement() {
+            int startIndex = currentIndex;
+
+            Scanner.Lexeme nameToken = consume(
+                    Scanner.TokenKind.IDENTIFIER,
+                    "Ожидался идентификатор слева от '='."
+            );
+            consume(Scanner.TokenKind.ASSIGN, "Ожидался знак '=' после имени.");
+            consume(Scanner.TokenKind.LAMBDA, "Ожидалось ключевое слово 'lambda'.");
+
+            List<ParameterNode> parameters = parseParameters();
+
+            consume(Scanner.TokenKind.COLON, "Ожидалось двоеточие ':' после параметров.");
+            ExpressionNode expression = parseExpression();
+
+            boolean hasSemicolon = match(Scanner.TokenKind.SEMICOLON);
+            if (!hasSemicolon) {
+                reportError(current(), "Ожидалась точка с запятой ';' в конце выражения.");
+                recoverToNextStatement();
             }
 
-            Scanner.Lexeme token = current();
-
-            if (insertionFollowers.contains(token.getKind()) || syncSet.contains(token.getKind())) {
-                reportMissing(token, expectedDescription);
+            if (nameToken == null || expression == null) {
+                if (currentIndex == startIndex) {
+                    advance();
+                }
                 return null;
             }
 
-            reportCurrent(token, "Ожидался " + expectedDescription + ".");
-            synchronize(union(insertionFollowers, syncSet, EnumSet.of(expected)));
+            return new LambdaDeclarationNode(
+                    nameToken.getLexeme(),
+                    nameToken.getLine(),
+                    nameToken.getColumn(),
+                    parameters,
+                    expression
+            );
+        }
 
-            if (match(expected)) {
-                return previous();
+        private List<ParameterNode> parseParameters() {
+            List<ParameterNode> parameters = new ArrayList<>();
+            if (check(Scanner.TokenKind.COLON)) {
+                return parameters;
             }
 
-            if (insertionFollowers.contains(current().getKind()) || syncSet.contains(current().getKind())) {
-                reportMissing(current(), expectedDescription);
+            Scanner.Lexeme first = consume(
+                    Scanner.TokenKind.IDENTIFIER,
+                    "Ожидался идентификатор параметра."
+            );
+            if (first != null) {
+                parameters.add(new ParameterNode(first.getLexeme(), first.getLine(), first.getColumn()));
+            }
+
+            while (match(Scanner.TokenKind.COMMA)) {
+                Scanner.Lexeme nextParam = consume(
+                        Scanner.TokenKind.IDENTIFIER,
+                        "Ожидался идентификатор параметра после ','."
+                );
+                if (nextParam != null) {
+                    parameters.add(new ParameterNode(nextParam.getLexeme(), nextParam.getLine(), nextParam.getColumn()));
+                }
+            }
+
+            while (check(Scanner.TokenKind.IDENTIFIER)) {
+                reportError(current(), "Ожидалась запятая между параметрами.");
+                Scanner.Lexeme missingCommaParam = advance();
+                parameters.add(new ParameterNode(
+                        missingCommaParam.getLexeme(),
+                        missingCommaParam.getLine(),
+                        missingCommaParam.getColumn()
+                ));
+            }
+
+            return parameters;
+        }
+
+        private ExpressionNode parseExpression() {
+            ExpressionNode expression = parseTerm();
+
+            while (check(Scanner.TokenKind.PLUS) || check(Scanner.TokenKind.MINUS)) {
+                Scanner.Lexeme operator = advance();
+                ExpressionNode right = parseTerm();
+                if (right == null || expression == null) {
+                    continue;
+                }
+                expression = new BinaryOpNode(
+                        operator.getLexeme(),
+                        operator.getLine(),
+                        operator.getColumn(),
+                        expression,
+                        right
+                );
+            }
+
+            return expression;
+        }
+
+        private ExpressionNode parseTerm() {
+            ExpressionNode term = parseFactor();
+
+            while (check(Scanner.TokenKind.STAR) || check(Scanner.TokenKind.SLASH)) {
+                Scanner.Lexeme operator = advance();
+                ExpressionNode right = parseFactor();
+                if (right == null || term == null) {
+                    continue;
+                }
+                term = new BinaryOpNode(
+                        operator.getLexeme(),
+                        operator.getLine(),
+                        operator.getColumn(),
+                        term,
+                        right
+                );
+            }
+
+            return term;
+        }
+
+        private ExpressionNode parseFactor() {
+            if (match(Scanner.TokenKind.IDENTIFIER)) {
+                Scanner.Lexeme token = previous();
+                return new IdentifierNode(token.getLexeme(), token.getLine(), token.getColumn());
+            }
+
+            if (match(Scanner.TokenKind.NUMBER)) {
+                Scanner.Lexeme token = previous();
+                return new NumberLiteralNode(token.getLexeme(), token.getLine(), token.getColumn());
+            }
+
+            if (match(Scanner.TokenKind.LPAREN)) {
+                ExpressionNode nested = parseExpression();
+                consume(Scanner.TokenKind.RPAREN, "Ожидалась закрывающая скобка ')'.");
+                return nested;
+            }
+
+            reportError(current(), "Ожидался идентификатор, число или выражение в скобках.");
+            if (!isAtEnd()) {
+                advance();
             }
             return null;
         }
 
-        private void reportCurrent(Scanner.Lexeme token, String description) {
-            String fragment = token.isEof() ? "<конец ввода>" : token.getLexeme();
-            int length = token.isEof() ? 0 : token.getLength();
-            errors.add(new Scanner.ErrorInfo(
-                    "Синтаксическая ошибка",
-                    fragment,
-                    description + " Найдено '" + fragment + "'.",
-                    token.getLine(),
-                    token.getColumn(),
-                    length
-            ));
+        private Scanner.Lexeme consume(Scanner.TokenKind expected, String message) {
+            if (match(expected)) {
+                return previous();
+            }
+            reportError(current(), message);
+            if (!isAtEnd()) {
+                advance();
+            }
+            return null;
         }
 
-        private void reportMissing(Scanner.Lexeme token, String expectedDescription) {
-            String fragment = token.isEof() ? "<конец ввода>" : token.getLexeme();
-            errors.add(new Scanner.ErrorInfo(
-                    "Синтаксическая ошибка",
-                    fragment,
-                    "Ожидался " + expectedDescription + ".",
-                    token.getLine(),
-                    token.getColumn(),
-                    0
-            ));
-        }
+        private void recoverToNextStatement() {
+            while (!isAtEnd() && !check(Scanner.TokenKind.SEMICOLON) && !check(Scanner.TokenKind.IDENTIFIER)) {
+                advance();
+            }
 
-        private void synchronize(EnumSet<Scanner.TokenKind> syncTokens) {
-            while (!isAtEnd() && !syncTokens.contains(current().getKind())) {
+            if (check(Scanner.TokenKind.SEMICOLON)) {
                 advance();
             }
         }
 
-        private EnumSet<Scanner.TokenKind> union(EnumSet<Scanner.TokenKind> first, EnumSet<Scanner.TokenKind> second) {
-            EnumSet<Scanner.TokenKind> result = EnumSet.noneOf(Scanner.TokenKind.class);
-            result.addAll(first);
-            result.addAll(second);
-            return result;
-        }
+        private void reportError(Scanner.Lexeme token, String message) {
+            String fragment = token.isEof() ? "<конец ввода>" : token.getLexeme();
+            int length = token.isEof() ? 0 : token.getLength();
 
-        private EnumSet<Scanner.TokenKind> union(
-                EnumSet<Scanner.TokenKind> first,
-                EnumSet<Scanner.TokenKind> second,
-                EnumSet<Scanner.TokenKind> third
-        ) {
-            EnumSet<Scanner.TokenKind> result = EnumSet.noneOf(Scanner.TokenKind.class);
-            result.addAll(first);
-            result.addAll(second);
-            result.addAll(third);
-            return result;
+            errors.add(new Scanner.ErrorInfo(
+                    "Синтаксическая ошибка",
+                    fragment,
+                    message,
+                    token.getLine(),
+                    token.getColumn(),
+                    length
+            ));
         }
 
         private boolean match(Scanner.TokenKind expected) {
@@ -349,20 +265,17 @@ public class LambdaParser {
             return previous();
         }
 
-        private boolean isAtEnd() {
-            return current().getKind() == Scanner.TokenKind.EOF;
-        }
-
-        private Scanner.Lexeme current() {
-            if (lexemes.isEmpty()) {
-                return new Scanner.Lexeme(Scanner.TokenKind.EOF, "<EOF>", 1, 1);
-            }
-            return lexemes.get(Math.min(currentIndex, lexemes.size() - 1));
-        }
-
         private Scanner.Lexeme previous() {
             int index = Math.max(currentIndex - 1, 0);
             return lexemes.get(index);
+        }
+
+        private Scanner.Lexeme current() {
+            return lexemes.get(Math.min(currentIndex, lexemes.size() - 1));
+        }
+
+        private boolean isAtEnd() {
+            return current().getKind() == Scanner.TokenKind.EOF;
         }
     }
 }

@@ -22,14 +22,15 @@ import java.util.ResourceBundle;
 import hotkeysService.*;
 import localization.*;
 import org.fxmisc.richtext.CodeArea;
+import parser.LambdaParser;
+import parser.ast.AstTextPrinter;
+import parser.ast.ProgramNode;
+import parser.semantic.SemanticAnalyzer;
 import scanner.*;
 import exceptions.*;
 import save.file.*;
 import multipleTabsService.*;
 import highlighting.HighlightingService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 enum Locale {
@@ -38,11 +39,11 @@ enum Locale {
 
 public class Controller implements Initializable {
 
-    //  Главное окно
+    //  Р“Р»Р°РІРЅРѕРµ РѕРєРЅРѕ
     @FXML
     private VBox mainWindow;
 
-    //  Меню файл
+    //  РњРµРЅСЋ С„Р°Р№Р»
     @FXML
     private Menu fileLabel;
     @FXML
@@ -56,7 +57,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem exitButton;
 
-    //  Меню правка
+    //  РњРµРЅСЋ РїСЂР°РІРєР°
     @FXML
     private Menu editLabel;
     @FXML
@@ -74,7 +75,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem selectAllButton;
 
-    //  Меню справка
+    //  РњРµРЅСЋ СЃРїСЂР°РІРєР°
     @FXML
     private Menu aboutLabel;
     @FXML
@@ -82,7 +83,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem aboutButton;
 
-    //  Меню язык
+    //  РњРµРЅСЋ СЏР·С‹Рє
     @FXML
     private Menu languageLabel;
     @FXML
@@ -90,7 +91,7 @@ public class Controller implements Initializable {
     @FXML
     private RadioMenuItem russianSelectButton;
 
-    //  Пуск
+    //  РџСѓСЃРє
     @FXML
     private MenuItem runButton;
     @FXML
@@ -98,7 +99,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem runAntlrButton;
 
-    //  Меню Регулярки
+    //  РњРµРЅСЋ Р РµРіСѓР»СЏСЂРєРё
     @FXML
     private Menu regexLabel;
     @FXML
@@ -108,11 +109,11 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem regexLongitudeButton;
 
-    //  Меню Вывод
+    //  РњРµРЅСЋ Р’С‹РІРѕРґ
     @FXML
     private Menu outputLabel;
 
-    //  Панель инструментов
+    //  РџР°РЅРµР»СЊ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ
     @FXML
     private Tooltip createTooltip;
     @FXML
@@ -130,16 +131,16 @@ public class Controller implements Initializable {
     @FXML
     private Tooltip pasteTooltip;
 
-    //  Поле состояния
+    //  РџРѕР»Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
     @FXML
     private Label statusLabel;
 
-    //  Вкладки
+    //  Р’РєР»Р°РґРєРё
     @FXML
     private TabPane tabPane;
     private final ObservableList<FileTab> fileTabs = FXCollections.observableArrayList();
 
-    //  Меню модулей
+    //  РњРµРЅСЋ РјРѕРґСѓР»РµР№
     @FXML
     private Menu analyzerLabel;
     @FXML
@@ -147,7 +148,7 @@ public class Controller implements Initializable {
     @FXML
     private Menu controlFlowGraphLabel;
 
-    //  Таблица с результатами регулярных выражений
+    //  РўР°Р±Р»РёС†Р° СЃ СЂРµР·СѓР»СЊС‚Р°С‚Р°РјРё СЂРµРіСѓР»СЏСЂРЅС‹С… РІС‹СЂР°Р¶РµРЅРёР№
     @FXML
     private TableView<RegexMatchEntry> regexTable;
     @FXML
@@ -156,12 +157,19 @@ public class Controller implements Initializable {
     private TableColumn<RegexMatchEntry, String> regexPositionColumn;
     @FXML
     private TableColumn<RegexMatchEntry, String> regexLengthColumn;
+    @FXML
+    private TextArea astOutputArea;
+    @FXML
+    private TextArea semanticOutputArea;
+    @FXML
+    private Label errorCountLabel;
 
 
     private Locale locale = Locale.Russian;
     private List<Object> localizationList = new ArrayList<>();
     private ExceptionOutput exceptionOutput;
     private Stage stage;
+    private ProgramNode lastSemanticAst = new ProgramNode(List.of());
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -175,24 +183,27 @@ public class Controller implements Initializable {
         exceptionOutput = new ExceptionOutput();
         getOutputService();
         initHotkeys();
+        astOutputArea.setText("AST empty.");
+        semanticOutputArea.setText("Errors: none.");
+        errorCountLabel.setText("РљРѕР»РёС‡РµСЃС‚РІРѕ РѕС€РёР±РѕРє: 0");
     }
 
     private void addAllToLocalizationList() {
 
-        //  Меню
+        //  РњРµРЅСЋ
         localizationList.add(fileLabel);
         localizationList.add(editLabel);
         localizationList.add(aboutLabel);
         localizationList.add(languageLabel);
 
-        //  Панель файл
+        //  РџР°РЅРµР»СЊ С„Р°Р№Р»
         localizationList.add(createButton);
         localizationList.add(loadFileButton);
         localizationList.add(saveButton);
         localizationList.add(saveAsButton);
         localizationList.add(exitButton);
 
-        //  Меню правка
+        //  РњРµРЅСЋ РїСЂР°РІРєР°
         localizationList.add(undoButton);
         localizationList.add(returnButton);
         localizationList.add(cutButton);
@@ -201,15 +212,15 @@ public class Controller implements Initializable {
         localizationList.add(removeButton);
         localizationList.add(selectAllButton);
 
-        //  Меню справка
+        //  РњРµРЅСЋ СЃРїСЂР°РІРєР°
         localizationList.add(userManualButton);
         localizationList.add(aboutButton);
 
-        //  Меню язык
+        //  РњРµРЅСЋ СЏР·С‹Рє
         localizationList.add(englishSelectButton);
         localizationList.add(russianSelectButton);
 
-        //  Панель инструментов
+        //  РџР°РЅРµР»СЊ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ
         localizationList.add(createTooltip);
         localizationList.add(openTooltip);
         localizationList.add(saveTooltip);
@@ -219,12 +230,12 @@ public class Controller implements Initializable {
         localizationList.add(cutTooltip);
         localizationList.add(pasteTooltip);
 
-        //  Меню Пуск
+        //  РњРµРЅСЋ РџСѓСЃРє
         localizationList.add(runButton);
         localizationList.add(runFlexBisonButton);
         localizationList.add(runAntlrButton);
 
-        //  Меню Регулярки
+        //  РњРµРЅСЋ Р РµРіСѓР»СЏСЂРєРё
         localizationList.add(regexLabel);
         localizationList.add(regexIdentifierButton);
         localizationList.add(regexUsernameButton);
@@ -236,7 +247,7 @@ public class Controller implements Initializable {
     }
 
     private void initWindowStyle(){
-        // Стили больше не требуются
+        // РЎС‚РёР»Рё Р±РѕР»СЊС€Рµ РЅРµ С‚СЂРµР±СѓСЋС‚СЃСЏ
     }
 
     private void initHotkeys(){
@@ -261,7 +272,7 @@ public class Controller implements Initializable {
 
         int position = 0;
         for (int i = 0; i < Math.min(line - 1, lines.length); i++) {
-            position += lines[i].length() + 1; // +1 для символа новой строки
+            position += lines[i].length() + 1; // +1 РґР»СЏ СЃРёРјРІРѕР»Р° РЅРѕРІРѕР№ СЃС‚СЂРѕРєРё
         }
 
         if (line - 1 < lines.length) {
@@ -279,7 +290,7 @@ public class Controller implements Initializable {
     @FXML
     protected void loadFileClick() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Открыть файл");
+        fileChooser.setTitle("РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р»");
         File file = fileChooser.showOpenDialog(tabPane.getScene().getWindow());
         if (file != null) {
             MultipleTabsService.createNewTab(tabPane, fileTabs, file, statusLabel);
@@ -348,28 +359,28 @@ public class Controller implements Initializable {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
-                alert.setTitle("О программе");
-                alert.setHeaderText("О программе");
+                alert.setTitle("Рћ РїСЂРѕРіСЂР°РјРјРµ");
+                alert.setHeaderText("Рћ РїСЂРѕРіСЂР°РјРјРµ");
                 alert.setContentText("""
-                Лабораторная работа №1
-                Сделал: Ситников В.И.
-                Группа: АП-326
-                Предмет: Теория формальных языков и компиляторов
-                Проверил: Антонянц Е.Н.
+                Р›Р°Р±РѕСЂР°С‚РѕСЂРЅР°СЏ СЂР°Р±РѕС‚Р° в„–1
+                РЎРґРµР»Р°Р»: РЎРёС‚РЅРёРєРѕРІ Р’.Р.
+                Р“СЂСѓРїРїР°: РђРџ-326
+                РџСЂРµРґРјРµС‚: РўРµРѕСЂРёСЏ С„РѕСЂРјР°Р»СЊРЅС‹С… СЏР·С‹РєРѕРІ Рё РєРѕРјРїРёР»СЏС‚РѕСЂРѕРІ
+                РџСЂРѕРІРµСЂРёР»: РђРЅС‚РѕРЅСЏРЅС† Р•.Рќ.
                 """);
             }
             case English -> {
                 alert.setTitle("About program");
                 alert.setHeaderText("About program");
                 alert.setContentText("""
-                Laboratory work №1
+                Laboratory work в„–1
                 Did: Sitnikov V.I.
                 Group: AP-326
                 Subject: Theory of formal languages and compilers
                 Checked: Antonyants E.N.
                 """);
             }
-            default -> exceptionOutput.ThrowException("Ошибка поддерживаемого языка.");
+            default -> exceptionOutput.ThrowException("РћС€РёР±РєР° РїРѕРґРґРµСЂР¶РёРІР°РµРјРѕРіРѕ СЏР·С‹РєР°.");
         }
         alert.showAndWait();
     }
@@ -379,14 +390,14 @@ public class Controller implements Initializable {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
-                alert.setTitle("Руководство пользователя");
-                alert.setHeaderText("Руководство пользователя");
+                alert.setTitle("Р СѓРєРѕРІРѕРґСЃС‚РІРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ");
+                alert.setHeaderText("Р СѓРєРѕРІРѕРґСЃС‚РІРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ");
             }
             case English -> {
                     alert.setTitle("User Manual");
                     alert.setHeaderText("User Manual");
             }
-            default -> exceptionOutput.ThrowException("Ошибка поддерживаемого языка.");
+            default -> exceptionOutput.ThrowException("РћС€РёР±РєР° РїРѕРґРґРµСЂР¶РёРІР°РµРјРѕРіРѕ СЏР·С‹РєР°.");
         }
 
         Label linkLabel = new Label("https://github.com/ozener9091/Compilers_Laba1");
@@ -400,7 +411,7 @@ public class Controller implements Initializable {
             try {
                 Desktop.getDesktop().browse(new URI("https://github.com/ozener9091/Compilers_Laba1"));
             } catch (Exception ex) {
-                exceptionOutput.ThrowException("Ошибка открытия ссылки.");
+                exceptionOutput.ThrowException("РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ СЃСЃС‹Р»РєРё.");
             }
         });
         alert.getDialogPane().setContent(linkLabel);
@@ -409,20 +420,50 @@ public class Controller implements Initializable {
 
     @FXML
     protected void runClick() {
-        // Анализ больше не требуется
-        statusLabel.setText("Анализ не требуется для работы с регулярными выражениями");
+        CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
+        if (activeCodeArea == null) {
+            return;
+        }
+        String sourceCode = activeCodeArea.getText();
+        Scanner.LexicalResult lexicalResult = Scanner.analyze(sourceCode);
+        LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
+        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
+        List<Scanner.ErrorInfo> allErrors = new ArrayList<>();
+        allErrors.addAll(lexicalResult.getErrors());
+        allErrors.addAll(parseResult.getErrors());
+        allErrors.addAll(semanticResult.getErrors());
+        lastSemanticAst = semanticResult.getAst();
+        astOutputArea.setText(AstTextPrinter.print(lastSemanticAst));
+        semanticOutputArea.setText(formatErrors(allErrors));
+        errorCountLabel.setText("Количество ошибок: " + allErrors.size());
+        if (allErrors.isEmpty()) {
+            statusLabel.setText("Анализ завершен: ошибок нет.");
+        } else {
+            statusLabel.setText("Анализ завершен: ошибок " + allErrors.size() + ".");
+        }
     }
 
     @FXML
     protected void runFlexBisonClick() {
-        // Анализ больше не требуется
-        statusLabel.setText("Анализ не требуется для работы с регулярными выражениями");
+        runClick();
     }
 
     @FXML
     protected void runAntlrClick() {
-        // Анализ больше не требуется
-        statusLabel.setText("Анализ не требуется для работы с регулярными выражениями");
+        runClick();
+    }
+
+    @FXML
+    protected void showAstClick() {
+        if (lastSemanticAst == null || lastSemanticAst.getDeclarations().isEmpty()) {
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("AST");
+            alert.setHeaderText("AST отсутствует");
+            alert.setContentText("Сначала выполните анализ корректной строки.");
+            alert.showAndWait();
+            return;
+        }
+        AstGraphWindow.show(lastSemanticAst);
     }
 
     @FXML
@@ -471,10 +512,30 @@ public class Controller implements Initializable {
         analyzeRegex("longitude");
     }
 
+    private String formatErrors(List<Scanner.ErrorInfo> errors) {
+        if (errors == null || errors.isEmpty()) {
+            return "Ошибок нет.";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (Scanner.ErrorInfo error : errors) {
+            builder.append(error.getType())
+                    .append(": ")
+                    .append(error.getDescription())
+                    .append(" (строка ")
+                    .append(error.getLine())
+                    .append(", символ ")
+                    .append(error.getColumn())
+                    .append(")")
+                    .append('\n');
+        }
+        return builder.toString().trim();
+    }
+
     private void analyzeRegex(String type) {
         String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
 
-        // Очистка таблицы
+        // РћС‡РёСЃС‚РєР° С‚Р°Р±Р»РёС†С‹
         regexTable.getItems().clear();
 
         List<RegexMatchEntry> matches;
@@ -484,17 +545,17 @@ public class Controller implements Initializable {
         switch (type) {
             case "identifier":
                 matches = RegexAnalyzer.findIdentifiers(inputText);
-                typeName = "Идентификатор";
+                typeName = "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ";
                 pattern = RegexAnalyzer.IDENTIFIER_PATTERN;
                 break;
             case "username":
                 matches = RegexAnalyzer.findUsernames(inputText);
-                typeName = "Имя пользователя";
+                typeName = "РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ";
                 pattern = RegexAnalyzer.USERNAME_PATTERN;
                 break;
             case "longitude":
                 matches = RegexAnalyzer.findLongitudes(inputText);
-                typeName = "Долгота";
+                typeName = "Р”РѕР»РіРѕС‚Р°";
                 pattern = RegexAnalyzer.LONGITUDE_PATTERN;
                 break;
             default:
@@ -503,17 +564,18 @@ public class Controller implements Initializable {
                 pattern = "";
         }
 
-        // Заполнение таблицы результатов
+        // Р—Р°РїРѕР»РЅРµРЅРёРµ С‚Р°Р±Р»РёС†С‹ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
         regexTable.getItems().addAll(matches);
         regexTable.refresh();
 
-        // Подсветка найденных совпадений в CodeArea
+        // РџРѕРґСЃРІРµС‚РєР° РЅР°Р№РґРµРЅРЅС‹С… СЃРѕРІРїР°РґРµРЅРёР№ РІ CodeArea
         CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
         HighlightingService.applyRegexHighlighting(activeCodeArea, null, pattern);
 
-        // Обновление статуса
+        // РћР±РЅРѕРІР»РµРЅРёРµ СЃС‚Р°С‚СѓСЃР°
         int matchCount = matches.size();
-        statusLabel.setText(String.format("%s: найдено совпадений: %d", typeName, matchCount));
+        statusLabel.setText(String.format("%s: РЅР°Р№РґРµРЅРѕ СЃРѕРІРїР°РґРµРЅРёР№: %d", typeName, matchCount));
     }
 
 }
+
