@@ -169,7 +169,7 @@ public final class LambdaParser {
         private ExpressionNode parseTerm() {
             ExpressionNode term = parseFactor();
 
-            while (check(Scanner.TokenKind.STAR) || check(Scanner.TokenKind.SLASH)) {
+            while (isMultiplicativeOperator(current().getKind())) {
                 Scanner.Lexeme operator = advance();
                 ExpressionNode right = parseFactor();
                 if (right == null || term == null) {
@@ -185,6 +185,14 @@ public final class LambdaParser {
             }
 
             return term;
+        }
+
+        private boolean isMultiplicativeOperator(Scanner.TokenKind kind) {
+            return kind == Scanner.TokenKind.STAR
+                    || kind == Scanner.TokenKind.SLASH
+                    || kind == Scanner.TokenKind.DOUBLE_SLASH
+                    || kind == Scanner.TokenKind.PERCENT
+                    || kind == Scanner.TokenKind.DOUBLE_STAR;
         }
 
         private ExpressionNode parseFactor() {

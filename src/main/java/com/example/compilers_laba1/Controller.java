@@ -25,6 +25,7 @@ import org.fxmisc.richtext.CodeArea;
 import parser.LambdaParser;
 import parser.ast.AstTextPrinter;
 import parser.ast.ProgramNode;
+import parser.ir.IntermediateCodeGenerator;
 import parser.semantic.SemanticAnalyzer;
 import scanner.*;
 import exceptions.*;
@@ -39,11 +40,11 @@ enum Locale {
 
 public class Controller implements Initializable {
 
-    //  Р“Р»Р°РІРЅРѕРµ РѕРєРЅРѕ
+    //  Р вЂњР В»Р В°Р Р†Р Р…Р С•Р Вµ Р С•Р С”Р Р…Р С•
     @FXML
     private VBox mainWindow;
 
-    //  РњРµРЅСЋ С„Р°Р№Р»
+    //  Р СљР ВµР Р…РЎР‹ РЎвЂћР В°Р в„–Р В»
     @FXML
     private Menu fileLabel;
     @FXML
@@ -57,7 +58,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem exitButton;
 
-    //  РњРµРЅСЋ РїСЂР°РІРєР°
+    //  Р СљР ВµР Р…РЎР‹ Р С—РЎР‚Р В°Р Р†Р С”Р В°
     @FXML
     private Menu editLabel;
     @FXML
@@ -75,7 +76,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem selectAllButton;
 
-    //  РњРµРЅСЋ СЃРїСЂР°РІРєР°
+    //  Р СљР ВµР Р…РЎР‹ РЎРѓР С—РЎР‚Р В°Р Р†Р С”Р В°
     @FXML
     private Menu aboutLabel;
     @FXML
@@ -83,7 +84,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem aboutButton;
 
-    //  РњРµРЅСЋ СЏР·С‹Рє
+    //  Р СљР ВµР Р…РЎР‹ РЎРЏР В·РЎвЂ№Р С”
     @FXML
     private Menu languageLabel;
     @FXML
@@ -91,7 +92,7 @@ public class Controller implements Initializable {
     @FXML
     private RadioMenuItem russianSelectButton;
 
-    //  РџСѓСЃРє
+    //  Р СџРЎС“РЎРѓР С”
     @FXML
     private MenuItem runButton;
     @FXML
@@ -99,7 +100,7 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem runAntlrButton;
 
-    //  РњРµРЅСЋ Р РµРіСѓР»СЏСЂРєРё
+    //  Р СљР ВµР Р…РЎР‹ Р В Р ВµР С–РЎС“Р В»РЎРЏРЎР‚Р С”Р С‘
     @FXML
     private Menu regexLabel;
     @FXML
@@ -109,11 +110,11 @@ public class Controller implements Initializable {
     @FXML
     private MenuItem regexLongitudeButton;
 
-    //  РњРµРЅСЋ Р’С‹РІРѕРґ
+    //  Р СљР ВµР Р…РЎР‹ Р вЂ™РЎвЂ№Р Р†Р С•Р Т‘
     @FXML
     private Menu outputLabel;
 
-    //  РџР°РЅРµР»СЊ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ
+    //  Р СџР В°Р Р…Р ВµР В»РЎРЉ Р С‘Р Р…РЎРѓРЎвЂљРЎР‚РЎС“Р СР ВµР Р…РЎвЂљР С•Р Р†
     @FXML
     private Tooltip createTooltip;
     @FXML
@@ -131,16 +132,16 @@ public class Controller implements Initializable {
     @FXML
     private Tooltip pasteTooltip;
 
-    //  РџРѕР»Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+    //  Р СџР С•Р В»Р Вµ РЎРѓР С•РЎРѓРЎвЂљР С•РЎРЏР Р…Р С‘РЎРЏ
     @FXML
     private Label statusLabel;
 
-    //  Р’РєР»Р°РґРєРё
+    //  Р вЂ™Р С”Р В»Р В°Р Т‘Р С”Р С‘
     @FXML
     private TabPane tabPane;
     private final ObservableList<FileTab> fileTabs = FXCollections.observableArrayList();
 
-    //  РњРµРЅСЋ РјРѕРґСѓР»РµР№
+    //  Р СљР ВµР Р…РЎР‹ Р СР С•Р Т‘РЎС“Р В»Р ВµР в„–
     @FXML
     private Menu analyzerLabel;
     @FXML
@@ -148,7 +149,7 @@ public class Controller implements Initializable {
     @FXML
     private Menu controlFlowGraphLabel;
 
-    //  РўР°Р±Р»РёС†Р° СЃ СЂРµР·СѓР»СЊС‚Р°С‚Р°РјРё СЂРµРіСѓР»СЏСЂРЅС‹С… РІС‹СЂР°Р¶РµРЅРёР№
+    //  Р СћР В°Р В±Р В»Р С‘РЎвЂ Р В° РЎРѓ РЎР‚Р ВµР В·РЎС“Р В»РЎРЉРЎвЂљР В°РЎвЂљР В°Р СР С‘ РЎР‚Р ВµР С–РЎС“Р В»РЎРЏРЎР‚Р Р…РЎвЂ№РЎвЂ¦ Р Р†РЎвЂ№РЎР‚Р В°Р В¶Р ВµР Р…Р С‘Р в„–
     @FXML
     private TableView<RegexMatchEntry> regexTable;
     @FXML
@@ -185,25 +186,25 @@ public class Controller implements Initializable {
         initHotkeys();
         astOutputArea.setText("AST empty.");
         semanticOutputArea.setText("Errors: none.");
-        errorCountLabel.setText("РљРѕР»РёС‡РµСЃС‚РІРѕ РѕС€РёР±РѕРє: 0");
+        errorCountLabel.setText("Р С™Р С•Р В»Р С‘РЎвЂЎР ВµРЎРѓРЎвЂљР Р†Р С• Р С•РЎв‚¬Р С‘Р В±Р С•Р С”: 0");
     }
 
     private void addAllToLocalizationList() {
 
-        //  РњРµРЅСЋ
+        //  Р СљР ВµР Р…РЎР‹
         localizationList.add(fileLabel);
         localizationList.add(editLabel);
         localizationList.add(aboutLabel);
         localizationList.add(languageLabel);
 
-        //  РџР°РЅРµР»СЊ С„Р°Р№Р»
+        //  Р СџР В°Р Р…Р ВµР В»РЎРЉ РЎвЂћР В°Р в„–Р В»
         localizationList.add(createButton);
         localizationList.add(loadFileButton);
         localizationList.add(saveButton);
         localizationList.add(saveAsButton);
         localizationList.add(exitButton);
 
-        //  РњРµРЅСЋ РїСЂР°РІРєР°
+        //  Р СљР ВµР Р…РЎР‹ Р С—РЎР‚Р В°Р Р†Р С”Р В°
         localizationList.add(undoButton);
         localizationList.add(returnButton);
         localizationList.add(cutButton);
@@ -212,15 +213,15 @@ public class Controller implements Initializable {
         localizationList.add(removeButton);
         localizationList.add(selectAllButton);
 
-        //  РњРµРЅСЋ СЃРїСЂР°РІРєР°
+        //  Р СљР ВµР Р…РЎР‹ РЎРѓР С—РЎР‚Р В°Р Р†Р С”Р В°
         localizationList.add(userManualButton);
         localizationList.add(aboutButton);
 
-        //  РњРµРЅСЋ СЏР·С‹Рє
+        //  Р СљР ВµР Р…РЎР‹ РЎРЏР В·РЎвЂ№Р С”
         localizationList.add(englishSelectButton);
         localizationList.add(russianSelectButton);
 
-        //  РџР°РЅРµР»СЊ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ
+        //  Р СџР В°Р Р…Р ВµР В»РЎРЉ Р С‘Р Р…РЎРѓРЎвЂљРЎР‚РЎС“Р СР ВµР Р…РЎвЂљР С•Р Р†
         localizationList.add(createTooltip);
         localizationList.add(openTooltip);
         localizationList.add(saveTooltip);
@@ -230,12 +231,12 @@ public class Controller implements Initializable {
         localizationList.add(cutTooltip);
         localizationList.add(pasteTooltip);
 
-        //  РњРµРЅСЋ РџСѓСЃРє
+        //  Р СљР ВµР Р…РЎР‹ Р СџРЎС“РЎРѓР С”
         localizationList.add(runButton);
         localizationList.add(runFlexBisonButton);
         localizationList.add(runAntlrButton);
 
-        //  РњРµРЅСЋ Р РµРіСѓР»СЏСЂРєРё
+        //  Р СљР ВµР Р…РЎР‹ Р В Р ВµР С–РЎС“Р В»РЎРЏРЎР‚Р С”Р С‘
         localizationList.add(regexLabel);
         localizationList.add(regexIdentifierButton);
         localizationList.add(regexUsernameButton);
@@ -247,7 +248,7 @@ public class Controller implements Initializable {
     }
 
     private void initWindowStyle(){
-        // РЎС‚РёР»Рё Р±РѕР»СЊС€Рµ РЅРµ С‚СЂРµР±СѓСЋС‚СЃСЏ
+        // Р РЋРЎвЂљР С‘Р В»Р С‘ Р В±Р С•Р В»РЎРЉРЎв‚¬Р Вµ Р Р…Р Вµ РЎвЂљРЎР‚Р ВµР В±РЎС“РЎР‹РЎвЂљРЎРѓРЎРЏ
     }
 
     private void initHotkeys(){
@@ -272,7 +273,7 @@ public class Controller implements Initializable {
 
         int position = 0;
         for (int i = 0; i < Math.min(line - 1, lines.length); i++) {
-            position += lines[i].length() + 1; // +1 РґР»СЏ СЃРёРјРІРѕР»Р° РЅРѕРІРѕР№ СЃС‚СЂРѕРєРё
+            position += lines[i].length() + 1; // +1 Р Т‘Р В»РЎРЏ РЎРѓР С‘Р СР Р†Р С•Р В»Р В° Р Р…Р С•Р Р†Р С•Р в„– РЎРѓРЎвЂљРЎР‚Р С•Р С”Р С‘
         }
 
         if (line - 1 < lines.length) {
@@ -290,7 +291,7 @@ public class Controller implements Initializable {
     @FXML
     protected void loadFileClick() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р»");
+        fileChooser.setTitle("Р С›РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ РЎвЂћР В°Р в„–Р В»");
         File file = fileChooser.showOpenDialog(tabPane.getScene().getWindow());
         if (file != null) {
             MultipleTabsService.createNewTab(tabPane, fileTabs, file, statusLabel);
@@ -359,28 +360,28 @@ public class Controller implements Initializable {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
-                alert.setTitle("Рћ РїСЂРѕРіСЂР°РјРјРµ");
-                alert.setHeaderText("Рћ РїСЂРѕРіСЂР°РјРјРµ");
+                alert.setTitle("Р С› Р С—РЎР‚Р С•Р С–РЎР‚Р В°Р СР СР Вµ");
+                alert.setHeaderText("Р С› Р С—РЎР‚Р С•Р С–РЎР‚Р В°Р СР СР Вµ");
                 alert.setContentText("""
-                Р›Р°Р±РѕСЂР°С‚РѕСЂРЅР°СЏ СЂР°Р±РѕС‚Р° в„–1
-                РЎРґРµР»Р°Р»: РЎРёС‚РЅРёРєРѕРІ Р’.Р.
-                Р“СЂСѓРїРїР°: РђРџ-326
-                РџСЂРµРґРјРµС‚: РўРµРѕСЂРёСЏ С„РѕСЂРјР°Р»СЊРЅС‹С… СЏР·С‹РєРѕРІ Рё РєРѕРјРїРёР»СЏС‚РѕСЂРѕРІ
-                РџСЂРѕРІРµСЂРёР»: РђРЅС‚РѕРЅСЏРЅС† Р•.Рќ.
+                Р вЂєР В°Р В±Р С•РЎР‚Р В°РЎвЂљР С•РЎР‚Р Р…Р В°РЎРЏ РЎР‚Р В°Р В±Р С•РЎвЂљР В° РІвЂћвЂ“1
+                Р РЋР Т‘Р ВµР В»Р В°Р В»: Р РЋР С‘РЎвЂљР Р…Р С‘Р С”Р С•Р Р† Р вЂ™.Р В.
+                Р вЂњРЎР‚РЎС“Р С—Р С—Р В°: Р С’Р Сџ-326
+                Р СџРЎР‚Р ВµР Т‘Р СР ВµРЎвЂљ: Р СћР ВµР С•РЎР‚Р С‘РЎРЏ РЎвЂћР С•РЎР‚Р СР В°Р В»РЎРЉР Р…РЎвЂ№РЎвЂ¦ РЎРЏР В·РЎвЂ№Р С”Р С•Р Р† Р С‘ Р С”Р С•Р СР С—Р С‘Р В»РЎРЏРЎвЂљР С•РЎР‚Р С•Р Р†
+                Р СџРЎР‚Р С•Р Р†Р ВµРЎР‚Р С‘Р В»: Р С’Р Р…РЎвЂљР С•Р Р…РЎРЏР Р…РЎвЂ  Р вЂў.Р Сњ.
                 """);
             }
             case English -> {
                 alert.setTitle("About program");
                 alert.setHeaderText("About program");
                 alert.setContentText("""
-                Laboratory work в„–1
+                Laboratory work РІвЂћвЂ“1
                 Did: Sitnikov V.I.
                 Group: AP-326
                 Subject: Theory of formal languages and compilers
                 Checked: Antonyants E.N.
                 """);
             }
-            default -> exceptionOutput.ThrowException("РћС€РёР±РєР° РїРѕРґРґРµСЂР¶РёРІР°РµРјРѕРіРѕ СЏР·С‹РєР°.");
+            default -> exceptionOutput.ThrowException("Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С—Р С•Р Т‘Р Т‘Р ВµРЎР‚Р В¶Р С‘Р Р†Р В°Р ВµР СР С•Р С–Р С• РЎРЏР В·РЎвЂ№Р С”Р В°.");
         }
         alert.showAndWait();
     }
@@ -390,14 +391,14 @@ public class Controller implements Initializable {
         Alert alert = new Alert(AlertType.INFORMATION);
         switch (locale) {
             case Russian -> {
-                alert.setTitle("Р СѓРєРѕРІРѕРґСЃС‚РІРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ");
-                alert.setHeaderText("Р СѓРєРѕРІРѕРґСЃС‚РІРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ");
+                alert.setTitle("Р В РЎС“Р С”Р С•Р Р†Р С•Р Т‘РЎРѓРЎвЂљР Р†Р С• Р С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЏ");
+                alert.setHeaderText("Р В РЎС“Р С”Р С•Р Р†Р С•Р Т‘РЎРѓРЎвЂљР Р†Р С• Р С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЏ");
             }
             case English -> {
                     alert.setTitle("User Manual");
                     alert.setHeaderText("User Manual");
             }
-            default -> exceptionOutput.ThrowException("РћС€РёР±РєР° РїРѕРґРґРµСЂР¶РёРІР°РµРјРѕРіРѕ СЏР·С‹РєР°.");
+            default -> exceptionOutput.ThrowException("Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С—Р С•Р Т‘Р Т‘Р ВµРЎР‚Р В¶Р С‘Р Р†Р В°Р ВµР СР С•Р С–Р С• РЎРЏР В·РЎвЂ№Р С”Р В°.");
         }
 
         Label linkLabel = new Label("https://github.com/ozener9091/Compilers_Laba1");
@@ -411,7 +412,7 @@ public class Controller implements Initializable {
             try {
                 Desktop.getDesktop().browse(new URI("https://github.com/ozener9091/Compilers_Laba1"));
             } catch (Exception ex) {
-                exceptionOutput.ThrowException("РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ СЃСЃС‹Р»РєРё.");
+                exceptionOutput.ThrowException("Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С•РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљР С‘РЎРЏ РЎРѓРЎРѓРЎвЂ№Р В»Р С”Р С‘.");
             }
         });
         alert.getDialogPane().setContent(linkLabel);
@@ -424,18 +425,30 @@ public class Controller implements Initializable {
         if (activeCodeArea == null) {
             return;
         }
+
         String sourceCode = activeCodeArea.getText();
         Scanner.LexicalResult lexicalResult = Scanner.analyze(sourceCode);
         LambdaParser.ParseResult parseResult = LambdaParser.parse(lexicalResult.getLexemes());
-        SemanticAnalyzer.SemanticResult semanticResult = SemanticAnalyzer.analyze(parseResult.getAst());
+
+        boolean hasLexicalOrSyntaxErrors = !lexicalResult.getErrors().isEmpty() || !parseResult.getErrors().isEmpty();
+        SemanticAnalyzer.SemanticResult semanticResult = hasLexicalOrSyntaxErrors
+                ? new SemanticAnalyzer.SemanticResult(new ProgramNode(List.of()), List.of())
+                : SemanticAnalyzer.analyze(parseResult.getAst());
+
         List<Scanner.ErrorInfo> allErrors = new ArrayList<>();
         allErrors.addAll(lexicalResult.getErrors());
         allErrors.addAll(parseResult.getErrors());
         allErrors.addAll(semanticResult.getErrors());
+
         lastSemanticAst = semanticResult.getAst();
-        astOutputArea.setText(AstTextPrinter.print(lastSemanticAst));
+        IntermediateCodeGenerator.ProgramIrResult irResult = hasLexicalOrSyntaxErrors
+                ? new IntermediateCodeGenerator.ProgramIrResult(List.of())
+                : IntermediateCodeGenerator.build(parseResult.getAst());
+
+        astOutputArea.setText(formatAstAndIr(lastSemanticAst, irResult, hasLexicalOrSyntaxErrors));
         semanticOutputArea.setText(formatErrors(allErrors));
         errorCountLabel.setText("Количество ошибок: " + allErrors.size());
+
         if (allErrors.isEmpty()) {
             statusLabel.setText("Анализ завершен: ошибок нет.");
         } else {
@@ -458,8 +471,8 @@ public class Controller implements Initializable {
         if (lastSemanticAst == null || lastSemanticAst.getDeclarations().isEmpty()) {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("AST");
-            alert.setHeaderText("AST отсутствует");
-            alert.setContentText("Сначала выполните анализ корректной строки.");
+            alert.setHeaderText("AST РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚");
+            alert.setContentText("РЎРЅР°С‡Р°Р»Р° РІС‹РїРѕР»РЅРёС‚Рµ Р°РЅР°Р»РёР· РєРѕСЂСЂРµРєС‚РЅРѕР№ СЃС‚СЂРѕРєРё.");
             alert.showAndWait();
             return;
         }
@@ -514,7 +527,7 @@ public class Controller implements Initializable {
 
     private String formatErrors(List<Scanner.ErrorInfo> errors) {
         if (errors == null || errors.isEmpty()) {
-            return "Ошибок нет.";
+            return "РћС€РёР±РѕРє РЅРµС‚.";
         }
 
         StringBuilder builder = new StringBuilder();
@@ -522,9 +535,9 @@ public class Controller implements Initializable {
             builder.append(error.getType())
                     .append(": ")
                     .append(error.getDescription())
-                    .append(" (строка ")
+                    .append(" (СЃС‚СЂРѕРєР° ")
                     .append(error.getLine())
-                    .append(", символ ")
+                    .append(", СЃРёРјРІРѕР» ")
                     .append(error.getColumn())
                     .append(")")
                     .append('\n');
@@ -532,10 +545,67 @@ public class Controller implements Initializable {
         return builder.toString().trim();
     }
 
+    private String formatAstAndIr(
+            ProgramNode semanticAst,
+            IntermediateCodeGenerator.ProgramIrResult irResult,
+            boolean blockedByLexicalOrSyntaxErrors
+    ) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("AST").append('\n');
+        builder.append(AstTextPrinter.print(semanticAst)).append('\n').append('\n');
+
+        builder.append("Тетрады").append('\n');
+        if (blockedByLexicalOrSyntaxErrors) {
+            builder.append("Построение тетрад пропущено: есть лексические или синтаксические ошибки.").append('\n');
+        } else if (irResult.getDeclarations().isEmpty()) {
+            builder.append("Нет корректных выражений для построения тетрад.").append('\n');
+        } else {
+            for (IntermediateCodeGenerator.LambdaIrResult declaration : irResult.getDeclarations()) {
+                builder.append("Функция ").append(declaration.getDeclarationName()).append(":").append('\n');
+
+                if (declaration.getQuadruples().isEmpty()) {
+                    builder.append("  (тетрады не требуются: выражение состоит из одного операнда)").append('\n');
+                } else {
+                    for (IntermediateCodeGenerator.Quadruple quadruple : declaration.getQuadruples()) {
+                        builder.append("  ")
+                                .append(quadruple.getIndex())
+                                .append(": (")
+                                .append(quadruple.getOp()).append(", ")
+                                .append(quadruple.getArg1()).append(", ")
+                                .append(quadruple.getArg2()).append(", ")
+                                .append(quadruple.getResult())
+                                .append(")")
+                                .append('\n');
+                    }
+                    builder.append("  result = ").append(declaration.getFinalResult()).append('\n');
+                }
+            }
+        }
+
+        builder.append('\n').append("ПОЛИЗ").append('\n');
+        if (blockedByLexicalOrSyntaxErrors) {
+            builder.append("Построение ПОЛИЗ пропущено: есть лексические или синтаксические ошибки.");
+        } else if (irResult.getDeclarations().isEmpty()) {
+            builder.append("Нет корректных выражений для построения ПОЛИЗ.");
+        } else {
+            for (IntermediateCodeGenerator.LambdaIrResult declaration : irResult.getDeclarations()) {
+                builder.append("Функция ").append(declaration.getDeclarationName()).append(":").append('\n');
+                builder.append("  ").append(String.join(" ", declaration.getPoliz())).append('\n');
+                if (declaration.getEvaluatedValue() != null) {
+                    builder.append("  value = ").append(declaration.getEvaluatedValue()).append('\n');
+                } else {
+                    builder.append("  ").append(declaration.getEvaluationError()).append('\n');
+                }
+            }
+        }
+
+        return builder.toString().trim();
+    }
     private void analyzeRegex(String type) {
         String inputText = MultipleTabsService.getActiveCodeArea(tabPane).getText();
 
-        // РћС‡РёСЃС‚РєР° С‚Р°Р±Р»РёС†С‹
+        // Р С›РЎвЂЎР С‘РЎРѓРЎвЂљР С”Р В° РЎвЂљР В°Р В±Р В»Р С‘РЎвЂ РЎвЂ№
         regexTable.getItems().clear();
 
         List<RegexMatchEntry> matches;
@@ -545,17 +615,17 @@ public class Controller implements Initializable {
         switch (type) {
             case "identifier":
                 matches = RegexAnalyzer.findIdentifiers(inputText);
-                typeName = "РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ";
+                typeName = "Р ВР Т‘Р ВµР Р…РЎвЂљР С‘РЎвЂћР С‘Р С”Р В°РЎвЂљР С•РЎР‚";
                 pattern = RegexAnalyzer.IDENTIFIER_PATTERN;
                 break;
             case "username":
                 matches = RegexAnalyzer.findUsernames(inputText);
-                typeName = "РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ";
+                typeName = "Р ВР СРЎРЏ Р С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЏ";
                 pattern = RegexAnalyzer.USERNAME_PATTERN;
                 break;
             case "longitude":
                 matches = RegexAnalyzer.findLongitudes(inputText);
-                typeName = "Р”РѕР»РіРѕС‚Р°";
+                typeName = "Р вЂќР С•Р В»Р С–Р С•РЎвЂљР В°";
                 pattern = RegexAnalyzer.LONGITUDE_PATTERN;
                 break;
             default:
@@ -564,18 +634,20 @@ public class Controller implements Initializable {
                 pattern = "";
         }
 
-        // Р—Р°РїРѕР»РЅРµРЅРёРµ С‚Р°Р±Р»РёС†С‹ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
+        // Р вЂ”Р В°Р С—Р С•Р В»Р Р…Р ВµР Р…Р С‘Р Вµ РЎвЂљР В°Р В±Р В»Р С‘РЎвЂ РЎвЂ№ РЎР‚Р ВµР В·РЎС“Р В»РЎРЉРЎвЂљР В°РЎвЂљР С•Р Р†
         regexTable.getItems().addAll(matches);
         regexTable.refresh();
 
-        // РџРѕРґСЃРІРµС‚РєР° РЅР°Р№РґРµРЅРЅС‹С… СЃРѕРІРїР°РґРµРЅРёР№ РІ CodeArea
+        // Р СџР С•Р Т‘РЎРѓР Р†Р ВµРЎвЂљР С”Р В° Р Р…Р В°Р в„–Р Т‘Р ВµР Р…Р Р…РЎвЂ№РЎвЂ¦ РЎРѓР С•Р Р†Р С—Р В°Р Т‘Р ВµР Р…Р С‘Р в„– Р Р† CodeArea
         CodeArea activeCodeArea = MultipleTabsService.getActiveCodeArea(tabPane);
         HighlightingService.applyRegexHighlighting(activeCodeArea, null, pattern);
 
-        // РћР±РЅРѕРІР»РµРЅРёРµ СЃС‚Р°С‚СѓСЃР°
+        // Р С›Р В±Р Р…Р С•Р Р†Р В»Р ВµР Р…Р С‘Р Вµ РЎРѓРЎвЂљР В°РЎвЂљРЎС“РЎРѓР В°
         int matchCount = matches.size();
-        statusLabel.setText(String.format("%s: РЅР°Р№РґРµРЅРѕ СЃРѕРІРїР°РґРµРЅРёР№: %d", typeName, matchCount));
+        statusLabel.setText(String.format("%s: Р Р…Р В°Р в„–Р Т‘Р ВµР Р…Р С• РЎРѓР С•Р Р†Р С—Р В°Р Т‘Р ВµР Р…Р С‘Р в„–: %d", typeName, matchCount));
     }
 
 }
+
+
 

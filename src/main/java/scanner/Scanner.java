@@ -18,7 +18,10 @@ public class Scanner {
         LPAREN,
         RPAREN,
         STAR,
+        DOUBLE_STAR,
         SLASH,
+        DOUBLE_SLASH,
+        PERCENT,
         SEMICOLON,
         EOF
     }
@@ -35,7 +38,10 @@ public class Scanner {
             Map.entry(TokenKind.LPAREN, 7),
             Map.entry(TokenKind.RPAREN, 8),
             Map.entry(TokenKind.STAR, 9),
+            Map.entry(TokenKind.DOUBLE_STAR, 14),
             Map.entry(TokenKind.SLASH, 13),
+            Map.entry(TokenKind.DOUBLE_SLASH, 15),
+            Map.entry(TokenKind.PERCENT, 16),
             Map.entry(TokenKind.SEMICOLON, 11)
     );
 
@@ -51,7 +57,10 @@ public class Scanner {
             Map.entry(TokenKind.LPAREN, "открывающая скобка"),
             Map.entry(TokenKind.RPAREN, "закрывающая скобка"),
             Map.entry(TokenKind.STAR, "знак умножения"),
+            Map.entry(TokenKind.DOUBLE_STAR, "оператор возведения в степень"),
             Map.entry(TokenKind.SLASH, "знак деления"),
+            Map.entry(TokenKind.DOUBLE_SLASH, "оператор целочисленного деления"),
+            Map.entry(TokenKind.PERCENT, "оператор остатка от деления"),
             Map.entry(TokenKind.SEMICOLON, "точка с запятой")
     );
 
@@ -313,6 +322,34 @@ public class Scanner {
                 continue;
             }
 
+            if (currentChar == '*') {
+                if (position + 1 < input.length() && input.charAt(position + 1) == '*') {
+                    addToken(lexemes, tokens, TokenKind.DOUBLE_STAR, "**", lineNumber, startColumn);
+                    position += 2;
+                    columnNumber += 2;
+                    continue;
+                }
+
+                addToken(lexemes, tokens, TokenKind.STAR, "*", lineNumber, startColumn);
+                position++;
+                columnNumber++;
+                continue;
+            }
+
+            if (currentChar == '/') {
+                if (position + 1 < input.length() && input.charAt(position + 1) == '/') {
+                    addToken(lexemes, tokens, TokenKind.DOUBLE_SLASH, "//", lineNumber, startColumn);
+                    position += 2;
+                    columnNumber += 2;
+                    continue;
+                }
+
+                addToken(lexemes, tokens, TokenKind.SLASH, "/", lineNumber, startColumn);
+                position++;
+                columnNumber++;
+                continue;
+            }
+
             TokenKind symbolKind = switch (currentChar) {
                 case '=' -> TokenKind.ASSIGN;
                 case ',' -> TokenKind.COMMA;
@@ -321,18 +358,17 @@ public class Scanner {
                 case '-' -> TokenKind.MINUS;
                 case '(' -> TokenKind.LPAREN;
                 case ')' -> TokenKind.RPAREN;
-                case '*' -> TokenKind.STAR;
-                case '/' -> TokenKind.SLASH;
+                case '%' -> TokenKind.PERCENT;
                 case ';' -> TokenKind.SEMICOLON;
                 default -> null;
             };
 
-            if (symbolKind != null) {
-                addToken(lexemes, tokens, symbolKind, String.valueOf(currentChar), lineNumber, startColumn);
-            } else {
+            if (symbolKind == null) {
                 String fragment = String.valueOf(currentChar);
                 String description = "Недопустимый символ '" + fragment + "'.";
                 errors.add(new ErrorInfo("Лексическая ошибка", fragment, description, lineNumber, startColumn));
+            } else {
+                addToken(lexemes, tokens, symbolKind, String.valueOf(currentChar), lineNumber, startColumn);
             }
 
             position++;
