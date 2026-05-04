@@ -950,6 +950,17 @@ pow2 = lambda x: x ** 2;
 divv = lambda a, b: (a // b) + (a % b);
 num  = lambda: 2 + 3 * 4;
 ```
+### Схема лексера
+
+
+<img width="621" height="2251" alt="Диаграмма без названия drawio(2)" src="https://github.com/user-attachments/assets/3bbc23b8-4c48-487e-b1d1-c98b8c7424e4" />
+
+
+### Схема рекурсивного спуска
+
+
+<img width="806" height="771" alt="ДиаграммаСпуска" src="https://github.com/user-attachments/assets/822fbfa9-bb8d-46ea-9ed2-890c7ab4e93a" />
+
 
 ### Лексические и синтаксические ошибки
 В проекте реализован поиск:
