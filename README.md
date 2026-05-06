@@ -939,10 +939,10 @@ num -> digit {digit}
 ### Примеры корректных строк
 
 ```python
-a + (b * c);
-x ** 2;
-(a // b) + (a % b);
-2 + 3 * 4;
+a + (b * c)
+x ** 2
+(a // b) + (a % b)
+2 + 3 * 4
 ```
 ### Схема лексера
 
@@ -954,7 +954,7 @@ x ** 2;
 ### Схема рекурсивного спуска
 
 
-<img width="806" height="771" alt="ДиаграммаСпуска" src="https://github.com/user-attachments/assets/822fbfa9-bb8d-46ea-9ed2-890c7ab4e93a" />
+<img width="806" height="483" alt="587089247-822fbfa9-bb8d-46ea-9ed2-890c7ab4e93a" src="https://github.com/user-attachments/assets/b8e64b15-3573-4c68-aaf4-11f3141ce778" />
 
 
 ### Лексические и синтаксические ошибки
@@ -991,4 +991,18 @@ result = t2
 Для выражений с идентификаторами вычисление пропускается с сообщением о причине.
 
 ### Тестирование
+
+<img width="495" height="895" alt="изображение" src="https://github.com/user-attachments/assets/5a6d5388-0901-488c-a24b-003f5c99ff17" />
+
+
+<img width="512" height="894" alt="изображение" src="https://github.com/user-attachments/assets/3d9e62f7-c1f8-43d2-8924-98a2bb140de3" />
+
+
+<img width="510" height="807" alt="изображение" src="https://github.com/user-attachments/assets/2e2eccc3-26bc-4535-a0f8-169dc4f5ef50" />
+
+
+<img width="384" height="814" alt="изображение" src="https://github.com/user-attachments/assets/abe1fe7a-aab9-487d-97b2-d29d0f32673f" />
+
+
+<img width="619" height="721" alt="изображение" src="https://github.com/user-attachments/assets/e81e53cd-e655-4aeb-8c6b-1e67115753e6" />
 
